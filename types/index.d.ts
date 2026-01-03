@@ -533,6 +533,16 @@ interface IMonacoOptions {
     cdn?: string;
 }
 
+/** Global Mermaid diagram configuration */
+interface IMermaidConfig {
+    /** Layout algorithm. Options: "dagre", "elk", "elk.layered", "elk.stress", "elk.force", "elk.mrtree", "elk.sporeOverlap", "tidy-tree" */
+    layout?: string;
+    /** Theme. Options: "default", "forest", "dark", "neutral", "base" */
+    theme?: string;
+    /** Look style. Options: "classic", "handDrawn", "neo" */
+    look?: string;
+}
+
 /** @link https://ld246.com/article/1549638745630#options-preview-markdown */
 interface IMarkdownConfig {
     /** 自动空格。默认值: false */
@@ -590,6 +600,8 @@ interface IPreview {
     render?: IPreviewRender;
     /** Monaco Editor options for code blocks */
     monaco?: IMonacoOptions;
+    /** Global Mermaid diagram config */
+    mermaid?: IMermaidConfig;
 
     /** 预览回调 */
     parse?(element: HTMLElement): void;

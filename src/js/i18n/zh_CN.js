@@ -10,6 +10,7 @@ window.VditorI18n = {
   'close': '关闭',
   'code': '代码块',
   'code-theme': '代码块主题预览',
+  'mermaid-config': 'Mermaid Config',
   'column': '列',
   'comment': '评论',
   'confirm': '确定',

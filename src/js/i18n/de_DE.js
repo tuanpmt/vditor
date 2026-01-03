@@ -10,6 +10,7 @@ window.VditorI18n = {
   'close': 'Schließen',
   'code': 'Codeblock',
   'code-theme': 'Codeblock-Thema',
+  'mermaid-config': 'Mermaid Config',
   'column': 'Spalte',
   'comment': 'Kommentar',
   'confirm': 'Bestätigen',

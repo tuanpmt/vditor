@@ -10,6 +10,7 @@
   'close': 'Stäng',
   'code': 'Kodblock',
   'code-theme': 'Granska tema för kodblock',
+  'mermaid-config': 'Mermaid Config',
   'column': 'Kolumn',
   'comment': 'Kommentera',
   'confirm': 'Bekräfta',

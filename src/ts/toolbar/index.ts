@@ -19,6 +19,7 @@ import {Info} from "./Info";
 import {InsertAfter} from "./InsertAfter";
 import {InsertBefore} from "./InsertBefore";
 import {MenuItem} from "./MenuItem";
+import {MermaidConfig} from "./MermaidConfig";
 import {Outdent} from "./Outdent";
 import {Outline} from "./Outline";
 import {Preview} from "./Preview";
@@ -176,6 +177,9 @@ export class Toolbar {
                 break;
             case "export":
                 menuItemObj = new Export(vditor, menuItem);
+                break;
+            case "mermaid-config":
+                menuItemObj = new MermaidConfig(vditor, menuItem);
                 break;
             default:
                 menuItemObj = new Custom(vditor, menuItem);

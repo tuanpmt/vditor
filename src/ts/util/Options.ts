@@ -419,6 +419,12 @@ export class Options {
                 tipPosition: "nw",
             },
             {
+                icon:
+                    '<svg><use xlink:href="#vditor-icon-mermaid"></use></svg>',
+                name: "mermaid-config",
+                tipPosition: "nw",
+            },
+            {
                 icon: '<svg><use xlink:href="#vditor-icon-bug"></use></svg>',
                 name: "devtools",
                 tipPosition: "nw",

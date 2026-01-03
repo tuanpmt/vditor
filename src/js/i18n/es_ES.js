@@ -10,6 +10,7 @@ window.VditorI18n = {
   'close': 'Cerrar',
   'code': 'Bloque de código',
   'code-theme': 'Vista previa del tema de código',
+  'mermaid-config': 'Mermaid Config',
   'column': 'Columna',
   'comment': 'Comentario',
   'confirm': 'Confirmar',

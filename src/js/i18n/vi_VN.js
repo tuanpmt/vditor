@@ -10,6 +10,7 @@ window.VditorI18n = {
   'close': 'Đóng',
   'code': 'Khối mã',
   'code-theme': 'Xem trước chủ đề khối mã',
+  'mermaid-config': 'Mermaid Config',
   'column': 'Cột',
   'comment': 'Bình luận',
   'confirm': 'Xác nhận',

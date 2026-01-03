@@ -40,11 +40,33 @@ const loadMermaid = async (cdn: string) => {
     return mermaidLoading;
 };
 
-export const mermaidRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN, theme: string) => {
+// Global mermaid config storage
+let globalMermaidConfig: {layout?: string, theme?: string, look?: string} = {};
+
+/**
+ * Set global mermaid config that applies to all diagrams
+ * Individual diagram frontmatter config will override these settings
+ */
+export const setGlobalMermaidConfig = (config: {layout?: string, theme?: string, look?: string}) => {
+    globalMermaidConfig = {...config};
+};
+
+/**
+ * Get current global mermaid config
+ */
+export const getGlobalMermaidConfig = () => {
+    return {...globalMermaidConfig};
+};
+
+export const mermaidRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN, theme: string, mermaidOptions?: {layout?: string, theme?: string, look?: string}) => {
     const mermaidElements = mermaidRenderAdapter.getElements(element);
     if (mermaidElements.length === 0) {
         return;
     }
+
+    // Merge options: mermaidOptions > globalMermaidConfig
+    const mergedOptions = {...globalMermaidConfig, ...mermaidOptions};
+
     loadMermaid(cdn).then((mermaid) => {
         const config: any = {
             securityLevel: "loose", // 升级后无 https://github.com/siyuan-note/siyuan/issues/3587，可使用该选项
@@ -70,8 +92,25 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
                 background: "transparent"
             }
         };
-        if (theme === "dark") {
+
+        // Apply global layout config
+        if (mergedOptions.layout) {
+            config.layout = mergedOptions.layout;
+        }
+
+        // Apply global theme config
+        if (mergedOptions.theme) {
+            config.theme = mergedOptions.theme;
+        } else if (theme === "dark") {
             config.theme = "dark";
+        }
+
+        // Apply global look config
+        if (mergedOptions.look) {
+            config.look = mergedOptions.look;
+        }
+
+        if (theme === "dark" || mergedOptions.theme === "dark") {
             config.themeVariables = {
                 ...config.themeVariables,
                 background: "transparent"

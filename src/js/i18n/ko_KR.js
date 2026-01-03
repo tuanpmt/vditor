@@ -10,6 +10,7 @@ window.VditorI18n = {
   'close': '닫기',
   'code': '코드블럭삽입',
   'code-theme': '코드블럭테마',
+  'mermaid-config': 'Mermaid Config',
   'column': '행',
   'comment': '코멘트',
   'confirm': '확인',

@@ -10,6 +10,7 @@ window.VditorI18n = {
   'close': '閉じる',
   'code': 'コードブロック挿入',
   'code-theme': 'コードブロックテーマ',
+  'mermaid-config': 'Mermaid Config',
   'column': '行列',
   'comment': 'コメント',
   'confirm': '確認',
