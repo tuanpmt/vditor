@@ -19,6 +19,7 @@
         "@mermaid-js/layout-tidy-tree": "^0.2.0",
         "diff-match-patch": "^1.0.5",
         "mermaid": "^11.12.2",
+        "monaco-editor": "^0.55.1",
         "wavedrom": "^3.5.0"
     },
     "types": "dist/index.d.ts",
