@@ -1,11 +1,43 @@
 import {Constants} from "../constants";
-import {addScript} from "../util/addScript";
 import {mermaidRenderAdapter} from "./adapterRender";
 import {genUUID} from "../util/function";
 
-declare const mermaid: {
-    initialize(options: any): void,
-    render(id: string, text: string): { svg: string }
+let mermaidModule: any = null;
+let mermaidLoading: Promise<any> | null = null;
+
+const loadMermaid = async (cdn: string) => {
+    if (mermaidModule) {
+        return mermaidModule;
+    }
+    if (mermaidLoading) {
+        return mermaidLoading;
+    }
+    mermaidLoading = (async () => {
+        const mermaidPath = `${cdn}/dist/js/mermaid/mermaid.esm.min.mjs`;
+        const mermaid = await import(/* webpackIgnore: true */ mermaidPath);
+
+        // Register ELK layout
+        try {
+            const elkLayoutPath = `${cdn}/dist/js/mermaid/layout-elk/mermaid-layout-elk.esm.min.mjs`;
+            const elkLayouts = await import(/* webpackIgnore: true */ elkLayoutPath);
+            mermaid.default.registerLayoutLoaders(elkLayouts.default);
+        } catch (e) {
+            console.warn("Failed to load ELK layout:", e);
+        }
+
+        // Register Tidy Tree layout
+        try {
+            const tidyTreePath = `${cdn}/dist/js/mermaid/layout-tidy-tree/mermaid-layout-tidy-tree.esm.min.mjs`;
+            const tidyTreeLayouts = await import(/* webpackIgnore: true */ tidyTreePath);
+            mermaid.default.registerLayoutLoaders(tidyTreeLayouts.default);
+        } catch (e) {
+            console.warn("Failed to load Tidy Tree layout:", e);
+        }
+
+        mermaidModule = mermaid.default;
+        return mermaidModule;
+    })();
+    return mermaidLoading;
 };
 
 export const mermaidRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN, theme: string) => {
@@ -13,7 +45,7 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
     if (mermaidElements.length === 0) {
         return;
     }
-    addScript(`${cdn}/dist/js/mermaid/mermaid.min.js?v=11.11.0`, "vditorMermaidScript").then(() => {
+    loadMermaid(cdn).then((mermaid) => {
         const config: any = {
             securityLevel: "loose", // 升级后无 https://github.com/siyuan-note/siyuan/issues/3587，可使用该选项
             altFontFamily: "sans-serif",
