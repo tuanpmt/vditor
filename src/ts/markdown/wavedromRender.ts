@@ -9,7 +9,7 @@ declare const WaveDrom: {
 
 let wavedromIndex = 0;
 
-export const wavedromRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN) => {
+export const wavedromRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN, theme = "light") => {
     const wavedromElements = wavedromRenderAdapter.getElements(element);
     if (wavedromElements.length === 0) {
         return;
@@ -22,12 +22,20 @@ export const wavedromRender = (element: (HTMLElement | Document) = document, cdn
                     item.parentElement.classList.contains("vditor-ir__marker--pre")) {
                     return;
                 }
-                if (item.getAttribute("data-processed") === "true") {
+                // Check if already processed with the same theme
+                const processedTheme = item.getAttribute("data-theme");
+                if (item.getAttribute("data-processed") === "true" && processedTheme === theme) {
                     return;
                 }
-                const code = wavedromRenderAdapter.getCode(item).trim();
-                if (code === "") {
-                    return;
+                // Get source code - either from saved attribute or from current content
+                let code = item.getAttribute("data-wavedrom-source");
+                if (!code) {
+                    code = wavedromRenderAdapter.getCode(item).trim();
+                    if (code === "") {
+                        return;
+                    }
+                    // Save original source for re-rendering
+                    item.setAttribute("data-wavedrom-source", code);
                 }
                 try {
                     const source = JSON.parse(code);
@@ -66,7 +74,16 @@ export const wavedromRender = (element: (HTMLElement | Document) = document, cdn
                         item.parentElement.style.padding = "0";
                         item.parentElement.style.margin = "0";
                     }
+                    // Apply dark mode styling
+                    if (container) {
+                        if (theme === "dark") {
+                            container.classList.add("vditor-wavedrom--dark");
+                        } else {
+                            container.classList.remove("vditor-wavedrom--dark");
+                        }
+                    }
                     item.setAttribute("data-processed", "true");
+                    item.setAttribute("data-theme", theme);
                 } catch (e) {
                     item.innerHTML = `<div style="color: red; text-align: left;"><small>WaveDrom Error: ${e.message}</small></div>`;
                     item.setAttribute("data-processed", "true");

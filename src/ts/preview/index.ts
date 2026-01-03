@@ -233,7 +233,7 @@ export class Preview {
         chartRender(vditor.preview.previewElement, vditor.options.cdn, vditor.options.theme);
         mindmapRender(vditor.preview.previewElement, vditor.options.cdn, vditor.options.theme);
         plantumlRender(vditor.preview.previewElement, vditor.options.cdn);
-        wavedromRender(vditor.preview.previewElement, vditor.options.cdn);
+        wavedromRender(vditor.preview.previewElement, vditor.options.cdn, vditor.options.theme);
         abcRender(vditor.preview.previewElement, vditor.options.cdn);
         if (vditor.options.preview.render.media.enable) {
             mediaRender(vditor.preview.previewElement);

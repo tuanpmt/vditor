@@ -82,7 +82,7 @@ export const processCodeRender = (previewPanel: HTMLElement, vditor: IVditor) =>
     } else if (language === "plantuml") {
         plantumlRender(previewPanel, vditor.options.cdn);
     } else if (language === "wavedrom") {
-        wavedromRender(previewPanel, vditor.options.cdn);
+        wavedromRender(previewPanel, vditor.options.cdn, vditor.options.theme);
     } else if (language === "graphviz") {
         graphvizRender(previewPanel, vditor.options.cdn);
     } else if (language === "math") {

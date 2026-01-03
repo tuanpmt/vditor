@@ -142,7 +142,7 @@ export const previewRender = async (previewElement: HTMLDivElement, markdown: st
     chartRender(previewElement, mergedOptions.cdn, mergedOptions.mode);
     mindmapRender(previewElement, mergedOptions.cdn, mergedOptions.mode);
     plantumlRender(previewElement, mergedOptions.cdn);
-    wavedromRender(previewElement, mergedOptions.cdn);
+    wavedromRender(previewElement, mergedOptions.cdn, mergedOptions.mode);
     abcRender(previewElement, mergedOptions.cdn);
     if (mergedOptions.render.media.enable) {
         mediaRender(previewElement);

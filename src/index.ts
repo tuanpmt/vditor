@@ -24,6 +24,8 @@ import {setCodeTheme} from "./ts/ui/setCodeTheme";
 import {setContentTheme} from "./ts/ui/setContentTheme";
 import {setPreviewMode} from "./ts/ui/setPreviewMode";
 import {setTheme} from "./ts/ui/setTheme";
+import {mermaidRender} from "./ts/markdown/mermaidRender";
+import {wavedromRender} from "./ts/markdown/wavedromRender";
 import {Undo} from "./ts/undo/index";
 import {Upload} from "./ts/upload/index";
 import {addScript, addScriptSync} from "./ts/util/addScript";
@@ -126,6 +128,9 @@ class Vditor extends VditorMethod {
             this.vditor.options.preview.hljs.style = codeTheme;
             setCodeTheme(codeTheme, this.vditor.options.cdn);
         }
+        // Re-render diagrams with new theme
+        mermaidRender(this.vditor.element, this.vditor.options.cdn, theme);
+        wavedromRender(this.vditor.element, this.vditor.options.cdn, theme);
     }
 
     /** 获取 Markdown 内容 */

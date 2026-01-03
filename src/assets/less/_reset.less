@@ -254,6 +254,15 @@
             }
         }
 
+        // WaveDrom dark mode - invert colors while preserving hue
+        .vditor-wavedrom--dark {
+            filter: invert(1) hue-rotate(180deg);
+
+            svg {
+                background: transparent !important;
+            }
+        }
+
         .language-math {
             mjx-container:focus {
                 outline: none;

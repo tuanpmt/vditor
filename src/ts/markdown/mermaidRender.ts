@@ -72,13 +72,24 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
         }
         mermaid.initialize(config);
         mermaidElements.forEach(async (item) => {
-            const code = mermaidRenderAdapter.getCode(item);
-            if (item.getAttribute("data-processed") === "true" || code.trim() === "") {
+            // Check if already processed with the same theme
+            const processedTheme = item.getAttribute("data-theme");
+            if (item.getAttribute("data-processed") === "true" && processedTheme === theme) {
                 return;
+            }
+            // Get source code - either from saved attribute or from current content
+            let code = item.getAttribute("data-mermaid-source");
+            if (!code) {
+                code = mermaidRenderAdapter.getCode(item);
+                if (code.trim() === "") {
+                    return;
+                }
+                // Save original source for re-rendering
+                item.setAttribute("data-mermaid-source", code);
             }
             const id = "mermaid" + genUUID()
             try {
-                const mermaidData = await mermaid.render(id, item.textContent);
+                const mermaidData = await mermaid.render(id, code);
                 item.innerHTML = mermaidData.svg;
             } catch (e) {
                 const errorElement = document.querySelector("#" + id);
@@ -87,6 +98,7 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
                 errorElement.parentElement.remove();
             }
             item.setAttribute("data-processed", "true");
+            item.setAttribute("data-theme", theme);
         });
     });
 };
