@@ -1,5 +1,6 @@
-import {hasClosestByClassName, hasTopClosestByClassName} from "../util/hasClosest";
+import {hasClosestByAttribute, hasClosestByClassName, hasTopClosestByClassName} from "../util/hasClosest";
 import {setSelectionFocus} from "../util/selection";
+import {initMonacoForCodeBlock, destroyMonacoForCodeBlock} from "../markdown/monacoRender";
 
 const nextIsNode = (range: Range) => {
     const startContainer = range.startContainer;
@@ -45,12 +46,28 @@ const previousIsNode = (range: Range) => {
 };
 
 export const expandMarker = (range: Range, vditor: IVditor) => {
-    vditor.ir.element.querySelectorAll(".vditor-ir__node--expand").forEach((item) => {
-        item.classList.remove("vditor-ir__node--expand");
-    });
+    // Check if focus is inside Monaco editor - if so, don't process
+    const activeElement = document.activeElement;
+    if (activeElement && activeElement.closest(".vditor-monaco-wrapper")) {
+        return;
+    }
 
     const nodeElement = hasTopClosestByClassName(range.startContainer, "vditor-ir__node");
     const nodeElementEnd = !range.collapsed && hasTopClosestByClassName(range.endContainer, "vditor-ir__node");
+
+    // Destroy Monaco for previously expanded code blocks that are different from current
+    vditor.ir.element.querySelectorAll(".vditor-ir__node--expand").forEach((item: HTMLElement) => {
+        // Skip if this is the same node we're about to expand
+        if (item === nodeElement) {
+            return;
+        }
+        // Check if this is a code block with Monaco
+        if (item.getAttribute("data-type") === "code-block") {
+            destroyMonacoForCodeBlock(item, vditor);
+        }
+        item.classList.remove("vditor-ir__node--expand");
+    });
+
     // 选中文本为同一个 nodeElement 内时，需要展开
     if (!range.collapsed && (!nodeElement || nodeElement !== nodeElementEnd)) {
         return;
@@ -61,12 +78,25 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
         nodeElement.classList.remove("vditor-ir__node--hidden");
         // https://github.com/Vanessa219/vditor/issues/615 safari中光标位置跳动
         setSelectionFocus(range);
+
+        // Initialize Monaco for code blocks (only if not already initialized)
+        if (nodeElement.getAttribute("data-type") === "code-block" && vditor.monaco?.isEnabled()) {
+            if (!nodeElement.querySelector(".vditor-monaco-wrapper")) {
+                initMonacoForCodeBlock(nodeElement, vditor);
+            }
+        }
     }
 
     const nextNode = nextIsNode(range);
     if (nextNode) {
         nextNode.classList.add("vditor-ir__node--expand");
         nextNode.classList.remove("vditor-ir__node--hidden");
+        // Initialize Monaco for code blocks (only if not already initialized)
+        if (nextNode.getAttribute("data-type") === "code-block" && vditor.monaco?.isEnabled()) {
+            if (!nextNode.querySelector(".vditor-monaco-wrapper")) {
+                initMonacoForCodeBlock(nextNode, vditor);
+            }
+        }
         return;
     }
 
@@ -74,6 +104,12 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
     if (previousNode) {
         previousNode.classList.add("vditor-ir__node--expand");
         previousNode.classList.remove("vditor-ir__node--hidden");
+        // Initialize Monaco for code blocks (only if not already initialized)
+        if (previousNode.getAttribute("data-type") === "code-block" && vditor.monaco?.isEnabled()) {
+            if (!previousNode.querySelector(".vditor-monaco-wrapper")) {
+                initMonacoForCodeBlock(previousNode, vditor);
+            }
+        }
         return;
     }
 };

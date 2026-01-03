@@ -9,6 +9,7 @@ import {processAfterRender} from "./ts/ir/process";
 import {getHTML} from "./ts/markdown/getHTML";
 import {getMarkdown} from "./ts/markdown/getMarkdown";
 import {setLute} from "./ts/markdown/setLute";
+import {MonacoManager} from "./ts/markdown/monacoRender";
 import {Outline} from "./ts/outline/index";
 import {Preview} from "./ts/preview/index";
 import {Resize} from "./ts/resize/index";
@@ -132,6 +133,10 @@ class Vditor extends VditorMethod {
         // Re-render diagrams with new theme
         mermaidRender(this.vditor.element, this.vditor.options.cdn, theme);
         wavedromRender(this.vditor.element, this.vditor.options.cdn, theme);
+        // Update Monaco editor theme
+        if (this.vditor.monaco) {
+            this.vditor.monaco.updateTheme(theme);
+        }
     }
 
     /** 设置字体 */
@@ -382,6 +387,11 @@ class Vditor extends VditorMethod {
 
     /** 销毁编辑器 */
     public destroy() {
+        // Destroy Monaco instances first
+        if (this.vditor.monaco) {
+            this.vditor.monaco.destroy();
+        }
+
         this.vditor.element.innerHTML = this.vditor.originalInnerHTML;
         this.vditor.element.classList.remove("vditor");
         this.vditor.element.removeAttribute("style");
@@ -526,6 +536,11 @@ class Vditor extends VditorMethod {
         this.vditor.wysiwyg = new WYSIWYG(this.vditor);
         this.vditor.ir = new IR(this.vditor);
         this.vditor.toolbar = new Toolbar(this.vditor);
+
+        // Initialize Monaco Manager if enabled
+        if (mergedOptions.preview?.monaco?.enable !== false) {
+            this.vditor.monaco = new MonacoManager(this.vditor);
+        }
 
         if (mergedOptions.resize.enable) {
             this.vditor.resize = new Resize(this.vditor);

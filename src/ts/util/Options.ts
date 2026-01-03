@@ -57,6 +57,7 @@ export class Options {
             hljs: Constants.HLJS_OPTIONS,
             markdown: Constants.MARKDOWN_OPTIONS,
             math: Constants.MATH_OPTIONS,
+            monaco: Constants.MONACO_OPTIONS,
             maxWidth: 800,
             mode: "both",
             theme: Constants.THEME_OPTIONS,

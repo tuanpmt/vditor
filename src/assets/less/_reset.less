@@ -293,6 +293,17 @@
             text-align: center;
         }
 
+        // Force transparent background for mermaid
+        .language-mermaid {
+            background: transparent !important;
+            background-color: transparent !important;
+
+            svg {
+                background: transparent !important;
+                background-color: transparent !important;
+            }
+        }
+
         .language-graphviz parsererror {
             overflow: auto;
         }

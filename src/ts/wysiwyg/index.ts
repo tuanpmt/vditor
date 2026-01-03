@@ -330,6 +330,11 @@ class WYSIWYG {
         });
 
         this.element.addEventListener("input", (event: InputEvent) => {
+            // Skip if input is from Monaco editor
+            const targetEl = event.target as HTMLElement;
+            if (targetEl && targetEl.closest && targetEl.closest(".vditor-monaco-wrapper")) {
+                return;
+            }
             if (event.inputType === "deleteByDrag" || event.inputType === "insertFromDrop") {
                 // https://github.com/Vanessa219/vditor/issues/801 编辑器内容拖拽问题
                 return;

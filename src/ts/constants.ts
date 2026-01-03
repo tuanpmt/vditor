@@ -77,6 +77,24 @@ export abstract class Constants {
         inlineDigit: false,
         macros: {},
     };
+    public static readonly MONACO_OPTIONS: IMonacoOptions = {
+        enable: true,
+        editorOptions: {
+            fontSize: 14,
+            tabSize: 4,
+            wordWrap: "off",
+            minimap: { enabled: false },
+            lineNumbers: "on",
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            scrollbar: {
+                vertical: "auto",
+                horizontal: "auto",
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10,
+            },
+        },
+    };
     public static readonly THEME_OPTIONS = {
         current: "light",
         list: {

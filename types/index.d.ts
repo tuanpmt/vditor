@@ -508,6 +508,31 @@ interface IMath {
     mathJaxOptions?: any;
 }
 
+/** Monaco Editor configuration for code blocks */
+interface IMonacoOptions {
+    /** Enable Monaco Editor for code blocks. Default: true */
+    enable?: boolean;
+    /** Monaco editor options (passed to monaco.editor.create) */
+    editorOptions?: {
+        /** Font size in pixels. Default: 14 */
+        fontSize?: number;
+        /** Tab size. Default: 4 */
+        tabSize?: number;
+        /** Enable word wrap. Default: "off" */
+        wordWrap?: "off" | "on" | "wordWrapColumn" | "bounded";
+        /** Enable minimap. Default: false */
+        minimap?: { enabled: boolean };
+        /** Line numbers. Default: "on" */
+        lineNumbers?: "on" | "off" | "relative" | "interval";
+        /** Scroll beyond last line. Default: false */
+        scrollBeyondLastLine?: boolean;
+        /** Additional Monaco editor options */
+        [key: string]: any;
+    };
+    /** Custom CDN path for Monaco. Default: uses vditor CDN */
+    cdn?: string;
+}
+
 /** @link https://ld246.com/article/1549638745630#options-preview-markdown */
 interface IMarkdownConfig {
     /** 自动空格。默认值: false */
@@ -563,6 +588,8 @@ interface IPreview {
     /** @link https://ld246.com/article/1549638745630#options-preview-actions  */
     actions?: Array<IPreviewAction | IPreviewActionCustom>;
     render?: IPreviewRender;
+    /** Monaco Editor options for code blocks */
+    monaco?: IMonacoOptions;
 
     /** 预览回调 */
     parse?(element: HTMLElement): void;
@@ -928,6 +955,15 @@ interface IVditor {
         hlToolbarTimeoutId: number,
         composingLock: boolean,
         preventInput: boolean,
+    };
+    monaco?: {
+        create(container: HTMLElement, language: string, code: string, onChange?: (content: string) => void): Promise<any>;
+        get(elementId: string): any;
+        getContent(elementId: string): string | null;
+        setContent(elementId: string, content: string): void;
+        destroy(elementId?: string): void;
+        updateTheme(vditorTheme: string): void;
+        isEnabled(): boolean;
     };
 }
 

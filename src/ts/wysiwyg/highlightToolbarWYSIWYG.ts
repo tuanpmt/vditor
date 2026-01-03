@@ -33,6 +33,7 @@ import {afterRenderEvent} from "./afterRenderEvent";
 import {removeBlockElement} from "./processKeydown";
 import {renderToc} from "../util/toc";
 import {getMarkdown} from "../markdown/getMarkdown";
+import {destroyMonacoForCodeBlock} from "../markdown/monacoRender";
 
 export const highlightToolbarWYSIWYG = (vditor: IVditor) => {
     clearTimeout(vditor.wysiwyg.hlToolbarTimeoutId);
@@ -607,12 +608,22 @@ export const highlightToolbarWYSIWYG = (vditor: IVditor) => {
         // block popover: math-inline, math-block, html-block, html-inline, code-block, html-entity
         let blockRenderElement = hasClosestByClassName(typeElement, "vditor-wysiwyg__block") as HTMLElement;
         const isBlock = blockRenderElement ? blockRenderElement.getAttribute("data-type").indexOf("block") > -1 : false;
+
+        // Check if focus is inside Monaco editor
+        const activeElement = document.activeElement;
+        const isMonacoFocused = activeElement && activeElement.closest(".vditor-monaco-wrapper");
+
         vditor.wysiwyg.element
             .querySelectorAll(".vditor-wysiwyg__preview")
             .forEach((itemElement) => {
                 if (!blockRenderElement || (blockRenderElement && isBlock && !blockRenderElement.contains(itemElement))) {
                     const previousElement = itemElement.previousElementSibling as HTMLElement;
                     previousElement.style.display = "none";
+                    // Destroy Monaco for code blocks when hiding (but not if Monaco is focused)
+                    const parentBlock = itemElement.parentElement as HTMLElement;
+                    if (parentBlock?.getAttribute("data-type") === "code-block" && !isMonacoFocused) {
+                        destroyMonacoForCodeBlock(parentBlock, vditor);
+                    }
                 }
             });
         if (blockRenderElement && isBlock) {

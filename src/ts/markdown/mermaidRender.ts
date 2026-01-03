@@ -65,10 +65,17 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
             gantt: {
                 leftPadding: 75,
                 rightPadding: 20
+            },
+            themeVariables: {
+                background: "transparent"
             }
         };
         if (theme === "dark") {
             config.theme = "dark";
+            config.themeVariables = {
+                ...config.themeVariables,
+                background: "transparent"
+            };
         }
         mermaid.initialize(config);
         mermaidElements.forEach(async (item) => {
@@ -96,6 +103,22 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
             try {
                 const mermaidData = await mermaid.render(id, code);
                 item.innerHTML = mermaidData.svg;
+                // Remove background from SVG to ensure transparency
+                const svg = item.querySelector("svg");
+                if (svg) {
+                    svg.style.removeProperty("background-color");
+                    svg.style.removeProperty("background");
+                    // Also remove background rect that mermaid adds
+                    const bgRect = svg.querySelector("rect.er.relationshipLabelBox, rect:first-child, .clusters rect");
+                    if (bgRect && bgRect.getAttribute("fill") && bgRect.getAttribute("width") === "100%") {
+                        bgRect.setAttribute("fill", "transparent");
+                    }
+                    // Remove style attribute with background
+                    const styleAttr = svg.getAttribute("style");
+                    if (styleAttr && styleAttr.includes("background")) {
+                        svg.setAttribute("style", styleAttr.replace(/background[^;]*;?/g, ""));
+                    }
+                }
             } catch (e) {
                 const errorElement = document.querySelector("#" + id);
                 item.innerHTML = `${errorElement.outerHTML}<br>

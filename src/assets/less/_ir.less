@@ -124,6 +124,17 @@
     cursor: pointer;
     white-space: initial;
     min-height: 27px;
+
+    // Force transparent background for mermaid
+    .language-mermaid {
+      background: transparent !important;
+      background-color: transparent !important;
+
+      svg {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+    }
   }
 
   &__link {
@@ -255,6 +266,17 @@
       color: @blurColor;
       text-decoration: underline;
     }
+  }
+
+  // Monaco Editor wrapper styles
+  .vditor-monaco-wrapper {
+    width: 100%;
+    min-height: 50px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+    background-color: var(--panel-background-color);
+    border: 1px solid var(--border-color);
   }
 }
 
