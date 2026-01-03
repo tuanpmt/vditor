@@ -1,12 +1,11 @@
 import {Constants} from "../constants";
-import {isHeadingMD, isHrMD} from "../util/fixBrowserBehavior";
+import {fixTableCellSpaces, isHeadingMD, isHrMD} from "../util/fixBrowserBehavior";
 import {
     getTopList,
     hasClosestBlock, hasClosestByAttribute,
     hasClosestByClassName,
 } from "../util/hasClosest";
 import {hasClosestByTag} from "../util/hasClosestByHeadings";
-import {log} from "../util/log";
 import {processCodeRender} from "../util/processCode";
 import {getSelectPosition, setRangeByWbr} from "../util/selection";
 import {renderToc} from "../util/toc";
@@ -175,33 +174,8 @@ export const input = (vditor: IVditor, range: Range, ignoreSpace = false, event?
         html = blockElement.innerHTML;
     }
 
-    log("SpinVditorIRDOM", html, "argument", vditor.options.debugger);
     html = vditor.lute.SpinVditorIRDOM(html);
-
-    // Workaround for Lute parser trimming spaces before inline markers in table cells
-    // Post-process: add space before inline elements that are missing it
-    if (html.indexOf("<table") > -1 || html.indexOf("<TABLE") > -1) {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        tempDiv.querySelectorAll("td, th").forEach((cell) => {
-            const childNodes = Array.from(cell.childNodes);
-            for (let i = 0; i < childNodes.length; i++) {
-                const node = childNodes[i];
-                const prevNode = childNodes[i - 1];
-                if (node.nodeType === 1 && (node as HTMLElement).hasAttribute("data-type")) {
-                    if (prevNode && prevNode.nodeType === 3 && prevNode.textContent) {
-                        const text = prevNode.textContent;
-                        if (text.length > 0 && !/\s$/.test(text)) {
-                            prevNode.textContent = text + " ";
-                        }
-                    }
-                }
-            }
-        });
-        html = tempDiv.innerHTML;
-    }
-
-    log("SpinVditorIRDOM", html, "result", vditor.options.debugger);
+    html = fixTableCellSpaces(html);
 
     if (isIRElement) {
         blockElement.innerHTML = html;

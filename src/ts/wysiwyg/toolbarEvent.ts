@@ -1,6 +1,6 @@
 import {Constants} from "../constants";
 import {removeCurrentToolbar} from "../toolbar/setToolbar";
-import {listToggle} from "../util/fixBrowserBehavior";
+import {fixTableCellSpaces, listToggle} from "../util/fixBrowserBehavior";
 import {hasClosestBlock, hasClosestByMatchTag} from "../util/hasClosest";
 import {processCodeRender} from "../util/processCode";
 import {getEditorRange, setRangeByWbr, setSelectionFocus} from "../util/selection";
@@ -201,7 +201,7 @@ export const toolbarEvent = (vditor: IVditor, actionBtn: Element, event: Event) 
             }
             range.insertNode(node);
             if (blockElement) {
-                blockElement.outerHTML = vditor.lute.SpinVditorDOM(blockElement.outerHTML);
+                blockElement.outerHTML = fixTableCellSpaces(vditor.lute.SpinVditorDOM(blockElement.outerHTML));
             }
             setRangeByWbr(vditor.wysiwyg.element, range);
             vditor.wysiwyg.element.querySelectorAll(".vditor-wysiwyg__preview[data-render='2']").forEach(

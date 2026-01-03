@@ -3,6 +3,7 @@ import {processAfterRender} from "../ir/process";
 import {getMarkdown} from "../markdown/getMarkdown";
 import {mathRender} from "../markdown/mathRender";
 import {processAfterRender as processSVAfterRender, processSpinVditorSVDOM} from "../sv/process";
+import {fixTableCellSpaces} from "../util/fixBrowserBehavior";
 import {setPadding, setTypewriterPosition} from "../ui/initUI";
 import {getEventName, updateHotkeyTip} from "../util/compatibility";
 import {highlightToolbar} from "../util/highlightToolbar";
@@ -56,7 +57,7 @@ export const setEditMode = (vditor: IVditor, type: string, event: Event | string
         vditor.lute.SetVditorSV(false);
 
         vditor.currentMode = "ir";
-        vditor.ir.element.innerHTML = vditor.lute.Md2VditorIRDOM(markdownText);
+        vditor.ir.element.innerHTML = fixTableCellSpaces(vditor.lute.Md2VditorIRDOM(markdownText));
         processAfterRender(vditor, {
             enableAddUndoStack: true,
             enableHint: false,

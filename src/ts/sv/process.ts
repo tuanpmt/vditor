@@ -52,12 +52,10 @@ export const getSideByType = (spanNode: Node, type: string, isPrevious = true) =
 };
 
 export const processSpinVditorSVDOM = (html: string, vditor: IVditor) => {
-    log("SpinVditorSVDOM", html, "argument", vditor.options.debugger);
     const spinHTML = vditor.lute.SpinVditorSVDOM(html)
     html = "<div data-block='0'>" +
         spinHTML.replace(/<span data-type="newline"><br \/><span style="display: none">\n<\/span><\/span><span data-type="newline"><br \/><span style="display: none">\n<\/span><\/span></g, '<span data-type="newline"><br /><span style="display: none">\n</span></span><span data-type="newline"><br /><span style="display: none">\n</span></span></div><div data-block="0"><') +
         "</div>";
-    log("SpinVditorSVDOM", html, "result", vditor.options.debugger);
     return html;
 };
 

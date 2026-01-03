@@ -1486,9 +1486,9 @@ export const paste = async (vditor: IVditor, event: (ClipboardEvent | DragEvent)
             });
             range.insertNode(document.createElement("wbr"));
             if (vditor.currentMode === "wysiwyg") {
-                blockElement.outerHTML = vditor.lute.SpinVditorDOM(blockElement.outerHTML);
+                blockElement.outerHTML = fixTableCellSpaces(vditor.lute.SpinVditorDOM(blockElement.outerHTML));
             } else {
-                blockElement.outerHTML = vditor.lute.SpinVditorIRDOM(blockElement.outerHTML);
+                blockElement.outerHTML = fixTableCellSpaces(vditor.lute.SpinVditorIRDOM(blockElement.outerHTML));
             }
             setRangeByWbr(vditor[vditor.currentMode].element, range);
         }
@@ -1566,4 +1566,36 @@ const walk = (el: Element, fn: (el: Element) => boolean | void) => {
         for (let i = 0; i < el.children.length; i++) {
             walk(el.children[i], fn);
         }
+};
+
+// Workaround for Lute parser trimming spaces before inline markers in table cells
+// Post-process: add space before inline elements that are missing it
+export const fixTableCellSpaces = (html: string): string => {
+    if (html.indexOf("<table") === -1 && html.indexOf("<TABLE") === -1) {
+        return html;
+    }
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    // Inline formatting tags used in WYSIWYG mode
+    const inlineTags = ["STRONG", "EM", "S", "CODE", "A", "MARK", "SUP", "SUB"];
+    tempDiv.querySelectorAll("td, th").forEach((cell) => {
+        const childNodes = Array.from(cell.childNodes);
+        for (let i = 0; i < childNodes.length; i++) {
+            const node = childNodes[i];
+            const prevNode = childNodes[i - 1];
+            if (node.nodeType === 1) {
+                const el = node as HTMLElement;
+                // Check for IR mode (data-type attribute) or WYSIWYG mode (inline tags)
+                const isInlineElement = el.hasAttribute("data-type") ||
+                    inlineTags.includes(el.tagName);
+                if (isInlineElement && prevNode && prevNode.nodeType === 3 && prevNode.textContent) {
+                    const text = prevNode.textContent;
+                    if (text.length > 0 && !/\s$/.test(text)) {
+                        prevNode.textContent = text + " ";
+                    }
+                }
+            }
+        }
+    });
+    return tempDiv.innerHTML;
 };

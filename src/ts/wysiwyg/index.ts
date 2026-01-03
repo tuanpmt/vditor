@@ -10,7 +10,7 @@ import {
     scrollCenter,
     selectEvent,
 } from "../util/editorCommonEvent";
-import {isHeadingMD, isHrMD, paste} from "../util/fixBrowserBehavior";
+import {fixTableCellSpaces, isHeadingMD, isHrMD, paste} from "../util/fixBrowserBehavior";
 import {
     hasClosestBlock, hasClosestByAttribute,
     hasClosestByClassName, hasClosestByMatchTag,
@@ -302,9 +302,9 @@ class WYSIWYG {
                     range.insertNode(node.content.cloneNode(true));
                     const blockElement = hasClosestByAttribute(range.startContainer, "data-block", "0");
                     if (blockElement) {
-                        blockElement.outerHTML = vditor.lute.SpinVditorDOM(blockElement.outerHTML);
+                        blockElement.outerHTML = fixTableCellSpaces(vditor.lute.SpinVditorDOM(blockElement.outerHTML));
                     } else {
-                        vditor.wysiwyg.element.innerHTML = vditor.lute.SpinVditorDOM(vditor.wysiwyg.element.innerHTML);
+                        vditor.wysiwyg.element.innerHTML = fixTableCellSpaces(vditor.lute.SpinVditorDOM(vditor.wysiwyg.element.innerHTML));
                     }
                     setRangeByWbr(vditor.wysiwyg.element, range);
                 },

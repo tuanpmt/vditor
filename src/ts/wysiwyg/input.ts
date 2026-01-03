@@ -1,9 +1,9 @@
+import {fixTableCellSpaces} from "../util/fixBrowserBehavior";
 import {
     getTopList,
     hasClosestBlock, hasClosestByAttribute, hasTopClosestByTag,
 } from "../util/hasClosest";
 import {hasClosestByTag} from "../util/hasClosestByHeadings";
-import {log} from "../util/log";
 import {processCodeRender} from "../util/processCode";
 import {setRangeByWbr} from "../util/selection";
 import {renderToc} from "../util/toc";
@@ -138,9 +138,8 @@ export const input = (vditor: IVditor, range: Range, event?: InputEvent) => {
             html = '<p data-block="0">```<wbr></p>'.replace("```", "```" + vditor.hint.recentLanguage);
         }
 
-        log("SpinVditorDOM", html, "argument", vditor.options.debugger);
         html = vditor.lute.SpinVditorDOM(html);
-        log("SpinVditorDOM", html, "result", vditor.options.debugger);
+        html = fixTableCellSpaces(html);
 
         if (isWYSIWYGElement) {
             blockElement.innerHTML = html;
