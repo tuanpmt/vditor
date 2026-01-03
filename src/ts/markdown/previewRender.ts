@@ -18,6 +18,7 @@ import {markmapRender} from "./markmapRender";
 import {SMILESRender} from "./SMILESRender";
 import {mindmapRender} from "./mindmapRender";
 import {plantumlRender} from "./plantumlRender";
+import {wavedromRender} from "./wavedromRender";
 import {setLute} from "./setLute";
 import {speechRender} from "./speechRender";
 
@@ -141,6 +142,7 @@ export const previewRender = async (previewElement: HTMLDivElement, markdown: st
     chartRender(previewElement, mergedOptions.cdn, mergedOptions.mode);
     mindmapRender(previewElement, mergedOptions.cdn, mergedOptions.mode);
     plantumlRender(previewElement, mergedOptions.cdn);
+    wavedromRender(previewElement, mergedOptions.cdn);
     abcRender(previewElement, mergedOptions.cdn);
     if (mergedOptions.render.media.enable) {
         mediaRender(previewElement);

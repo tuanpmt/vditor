@@ -235,8 +235,23 @@
         .language-markmap,
         .language-abc,
         .language-flowchart,
-        .language-graphviz {
+        .language-graphviz,
+        .language-wavedrom {
             margin-bottom: 16px;
+        }
+
+        pre:has(.language-wavedrom[data-processed="true"]) {
+            background: none !important;
+            background-image: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+
+            .language-wavedrom {
+                background: none !important;
+                background-image: none !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+            }
         }
 
         .language-math {

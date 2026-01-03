@@ -12,6 +12,7 @@ import {SMILESRender} from "../markdown/SMILESRender";
 import {markmapRender} from "../markdown/markmapRender";
 import {mindmapRender} from "../markdown/mindmapRender";
 import {plantumlRender} from "../markdown/plantumlRender";
+import {wavedromRender} from "../markdown/wavedromRender";
 import {getEventName} from "../util/compatibility";
 import {hasClosestByClassName, hasClosestByMatchTag} from "../util/hasClosest";
 import {hasClosestByTag} from "../util/hasClosestByHeadings";
@@ -232,6 +233,7 @@ export class Preview {
         chartRender(vditor.preview.previewElement, vditor.options.cdn, vditor.options.theme);
         mindmapRender(vditor.preview.previewElement, vditor.options.cdn, vditor.options.theme);
         plantumlRender(vditor.preview.previewElement, vditor.options.cdn);
+        wavedromRender(vditor.preview.previewElement, vditor.options.cdn);
         abcRender(vditor.preview.previewElement, vditor.options.cdn);
         if (vditor.options.preview.render.media.enable) {
             mediaRender(vditor.preview.previewElement);

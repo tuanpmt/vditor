@@ -14,6 +14,7 @@ import {markmapRender} from "./ts/markdown/markmapRender";
 import {mindmapRender} from "./ts/markdown/mindmapRender";
 import {outlineRender} from "./ts/markdown/outlineRender";
 import {plantumlRender} from "./ts/markdown/plantumlRender";
+import {wavedromRender} from "./ts/markdown/wavedromRender";
 import {md2html, previewRender} from "./ts/markdown/previewRender";
 import {speechRender} from "./ts/markdown/speechRender";
 import {previewImage} from "./ts/preview/image";
@@ -50,6 +51,8 @@ class Vditor {
     public static mindmapRender = mindmapRender;
     /** plantuml渲染 */
     public static plantumlRender = plantumlRender;
+    /** 数字时序图渲染 */
+    public static wavedromRender = wavedromRender;
     /** 大纲渲染 */
     public static outlineRender = outlineRender;
     /** 为[特定链接](https://github.com/Vanessa219/vditor/issues/7)分别渲染为视频、音频、嵌入的 iframe */
