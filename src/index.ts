@@ -24,6 +24,7 @@ import {setCodeTheme} from "./ts/ui/setCodeTheme";
 import {setContentTheme} from "./ts/ui/setContentTheme";
 import {setPreviewMode} from "./ts/ui/setPreviewMode";
 import {setTheme} from "./ts/ui/setTheme";
+import {loadFonts, setFont} from "./ts/ui/setFont";
 import {mermaidRender} from "./ts/markdown/mermaidRender";
 import {wavedromRender} from "./ts/markdown/wavedromRender";
 import {Undo} from "./ts/undo/index";
@@ -131,6 +132,15 @@ class Vditor extends VditorMethod {
         // Re-render diagrams with new theme
         mermaidRender(this.vditor.element, this.vditor.options.cdn, theme);
         wavedromRender(this.vditor.element, this.vditor.options.cdn, theme);
+    }
+
+    /** 设置字体 */
+    public setFonts(fontConfig: IFontConfig) {
+        this.vditor.options.font = {...this.vditor.options.font, ...fontConfig};
+        if (fontConfig.fontUrl) {
+            loadFonts(fontConfig.fontUrl);
+        }
+        setFont(this.vditor.element, this.vditor.options.font);
     }
 
     /** 获取 Markdown 内容 */
@@ -504,6 +514,12 @@ class Vditor extends VditorMethod {
             outline: new Outline(window.VditorI18n.outline),
             tip: new Tip(),
         };
+
+        // Load fonts and apply font CSS custom properties
+        if (mergedOptions.font?.fontUrl) {
+            loadFonts(mergedOptions.font.fontUrl);
+        }
+        setFont(this.vditor.element, mergedOptions.font);
 
         this.vditor.sv = new Editor(this.vditor);
         this.vditor.undo = new Undo();

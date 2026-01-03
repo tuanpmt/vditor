@@ -42,6 +42,7 @@ export class Options {
             extend: [],
             parse: true,
         },
+        font: Constants.FONT_OPTIONS,
         icon: "ant",
         lang: "zh_CN",
         mode: "ir",

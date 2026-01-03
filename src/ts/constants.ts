@@ -90,4 +90,10 @@ export abstract class Constants {
     // Default code themes for auto dark/light mode switching
     public static readonly CODE_THEME_DARK = "github-dark";
     public static readonly CODE_THEME_LIGHT = "github";
+    // Default font configuration
+    public static readonly FONT_OPTIONS = {
+        content: "Nunito Sans",
+        code: "Source Code Pro",
+        fontUrl: "https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Source+Code+Pro:wght@400;500;600&display=swap",
+    };
 }

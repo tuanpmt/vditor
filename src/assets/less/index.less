@@ -1,11 +1,12 @@
 @errorColor: #d23f31;
 @blurColor: #4285f4;
 
-@font-family-base: "Helvetica Neue", "Luxi Sans", "DejaVu Sans",
+// Fallback font stacks (used as defaults if custom fonts don't load)
+@font-family-fallback: "Helvetica Neue", "Luxi Sans", "DejaVu Sans",
   "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji",
   "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji",
   "EmojiSymbols";
-@font-family-code: mononoki, Consolas, "Liberation Mono", Menlo, Courier,
+@font-family-code-fallback: mononoki, Consolas, "Liberation Mono", Menlo, Courier,
   monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
   "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
 
@@ -14,6 +15,10 @@
 @max-width: 520px;
 
 .vditor {
+  // Font CSS custom properties (can be customized via options.font)
+  --font-family-content: "Nunito Sans", @font-family-fallback;
+  --font-family-code: "Source Code Pro", @font-family-code-fallback;
+
   --border-color: #d1d5da;
   --second-color: rgba(88, 96, 105, 0.36);
 

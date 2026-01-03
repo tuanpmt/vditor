@@ -375,6 +375,16 @@ interface IPreviewTheme {
     path?: string;
 }
 
+/** Font configuration for content and code */
+interface IFontConfig {
+    /** Font family for content text. Default: 'Nunito Sans' */
+    content?: string;
+    /** Font family for code blocks and inline code. Default: 'Source Code Pro' */
+    code?: string;
+    /** Custom Google Fonts URL or other font URL to load */
+    fontUrl?: string;
+}
+
 /** @link https://ld246.com/article/1549638745630#options-upload */
 interface IUpload {
     /** 上传 url */
@@ -773,6 +783,8 @@ interface IOptions {
     theme?: "classic" | "dark";
     /** 图标。默认值: 'ant' */
     icon?: "ant" | "material";
+    /** 字体配置 */
+    font?: IFontConfig;
     /** @link https://ld246.com/article/1549638745630#options-upload */
     upload?: IUpload;
     /** @link https://ld246.com/article/1549638745630#options-classes */

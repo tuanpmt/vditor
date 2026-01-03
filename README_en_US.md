@@ -55,7 +55,9 @@ Vditor has made efforts in these areas, hoping to make some contributions to the
 ## ✨  Features
 
 * Support three editing modes: WYSIWYG(wysiwyg), Instant Rendering(ir) and Split View(sv)
-* Support outline, mathematical formulas, mind maps, charts, flowcharts, Gantt charts, timing charts, staffs, [multimedia](https://ld246.com/article/1589813914768), voice reading, heading anchors, code highlighting and copying, graphviz rendering
+* Support outline, mathematical formulas, mind maps, charts, flowcharts, Gantt charts, timing charts, digital timing diagrams (WaveDrom), staffs, [multimedia](https://ld246.com/article/1589813914768), voice reading, heading anchors, code highlighting and copying, graphviz rendering
+* Auto dark/light mode switching for Mermaid diagrams, WaveDrom, and code blocks
+* Customizable fonts for content and code (default: Nunito Sans for content, Source Code Pro for code)
 * Export, image lazy loading, task list, multi-platform preview, multi-theme switching, copy to WeChat/zhihu function
 * Implementation of CommonMark and GFM specifications, formatting and syntax tree viewing of Markdown, and support for [10+ configurations](https://ld246.com/article/1549638745630#options-preview-markdown)
 * The toolbar contains 36+ items of operations. In addition to support for expansion, the [shortcut keys](https://ld246.com/article/1582778815353), tip, tip positions, icons, click events, class names, and sub-toolbars can be customized
@@ -100,6 +102,7 @@ The traditional *Split View* mode is suitable for Markdown editing on a large sc
 * Common Markdown extended syntax: Footnotes, ToC, Custom Heading ID
 * Chart syntax
   * Flow chart, sequence diagram, Gantt chart, supported by Mermaid
+  * Digital timing diagrams, supported by WaveDrom
   * Graphviz
   * Line chart, pie chart, brain chart, etc., supported by ECharts
 * Stave: supported by abc.js
@@ -198,6 +201,7 @@ Can be filled with element `id` or element itself` HTMLElement`
 | value | Editor initialization value | '' |
 | theme | Theme: classic, dark | 'classic' |
 | icon | icon theme: ant, material | 'ant' |
+| font | Font configuration, see options.font | - |
 | customRenders: {language: string, render: (element: HTMLElement, vditor: IVditor) => void}[] | Custom render | [] |
 | customWysiwygToolbar(type: TWYSISYGToolbar, element: HTMLElement): void | Customizing the toolbar in wysiwyg mode | - |
 
@@ -476,6 +480,14 @@ xhr.send(JSON.stringify({url: src})); // src is the address of the image outside
 | enable | Initialize whether to show outline | false |
 | position | Outline location: 'left', 'right' | 'left' |
 
+#### options.font
+
+|   | Explanation | Default |
+| - | - | - |
+| content | Font family for content text | 'Nunito Sans' |
+| code | Font family for code blocks and inline code | 'Source Code Pro' |
+| fontUrl | Google Fonts URL or custom font URL to load | Google Fonts URL for Nunito Sans & Source Code Pro |
+
 #### methods
 
 |   | Explanation |
@@ -503,6 +515,7 @@ xhr.send(JSON.stringify({url: src})); // src is the address of the image outside
 | tip(text: string, time: number) | notification. time is 0 will always display |
 | setPreviewMode(mode: "both" \| "editor") | Set preview mode |
 | setTheme(theme: "dark" | "classic", contentTheme?: string, codeTheme?: string, contentThemePath?: string) | Set theme |
+| setFonts(fontConfig: IFontConfig) | Set fonts for content and code |
 | getCurrentMode(): string | Get the editor's current editing mode |
 | destroy() | Destroy the vditor |
 | getCommentIds(): {id: string, top: number}[] | Get all comments |
@@ -557,6 +570,7 @@ options?: IPreviewOptions {
 | - | - |
 | previewImage(oldImgElement: HTMLImageElement, lang: keyof II18n = "zh_CN", theme = "classic") | Click on the image to preview |
 | mermaidRender(element: HTMLElement, cdn = options.cdn, theme = options.theme) | flowchart/sequence diagram/gantt diagram rendering |
+| wavedromRender(element: HTMLElement, cdn = options.cdn, theme = options.theme) | digital timing diagram rendering |
 | SMILESRender(element: HTMLElement, cdn = options.cdn, theme = options.theme) | the structure of chemical |
 | markmapRender(element: HTMLElement, cdn = options.cdn) | markdown Mind Map |
 | flowchartRender(element: HTMLElement, cdn = options.cdn) | flowchart.js rendering |
@@ -627,7 +641,8 @@ Vditor uses the [MIT](https://opensource.org/licenses/MIT) open source license.
 
 * [Lute](https://github.com/88250/lute): A structured Markdown engine that supports Go and JavaScript
 * [highlight.js](https://github.com/highlightjs/highlight.js): JavaScript syntax highlighter
-* [mermaid](https://github.com/knsv/mermaid): Generation of diagram and flowchart from text in a similar manner as Markdown
+* [mermaid](https://github.com/mermaid-js/mermaid): Generation of diagram and flowchart from text in a similar manner as Markdown
+* [WaveDrom](https://github.com/wavedrom/wavedrom): Digital timing diagram rendering engine
 * [incubator-echarts](https://github.com/apache/incubator-echarts): A powerful, interactive charting and visualization library for browser
 * [abcjs](https://github.com/paulrosen/abcjs): JavaScript library for rendering standard music notation in a browser
 * [IntelliJ IDEA](https://www.jetbrains.com/?from=Vditor): Family of capable and ergonomic development environments
