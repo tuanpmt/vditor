@@ -87,4 +87,7 @@ export abstract class Constants {
         },
         path: `${Constants.CDN}/dist/css/content-theme`,
     };
+    // Default code themes for auto dark/light mode switching
+    public static readonly CODE_THEME_DARK = "github-dark";
+    public static readonly CODE_THEME_LIGHT = "github";
 }

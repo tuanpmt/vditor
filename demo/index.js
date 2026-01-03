@@ -55,7 +55,7 @@ const initVditor = (language) => {
         cdn: "",
         toolbar,
         lang: language,
-        mode: "wysiwyg",
+        mode: "ir",
         height: window.innerHeight + 100,
         outline: {
             enable: true,
@@ -133,7 +133,7 @@ const initVditor = (language) => {
         },
     })
 }
-initVditor("zh_CN")
+initVditor("en_US")
 window.setLang = (language) => {
     window.vditor.destroy()
     initVditor(language)

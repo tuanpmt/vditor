@@ -124,10 +124,10 @@ class Vditor extends VditorMethod {
             this.vditor.options.preview.theme.current = contentTheme;
             setContentTheme(contentTheme, contentThemePath || this.vditor.options.preview.theme.path);
         }
-        if (codeTheme) {
-            this.vditor.options.preview.hljs.style = codeTheme;
-            setCodeTheme(codeTheme, this.vditor.options.cdn);
-        }
+        // Auto-switch code theme if not explicitly provided
+        const effectiveCodeTheme = codeTheme || (theme === "dark" ? Constants.CODE_THEME_DARK : Constants.CODE_THEME_LIGHT);
+        this.vditor.options.preview.hljs.style = effectiveCodeTheme;
+        setCodeTheme(effectiveCodeTheme, this.vditor.options.cdn);
         // Re-render diagrams with new theme
         mermaidRender(this.vditor.element, this.vditor.options.cdn, theme);
         wavedromRender(this.vditor.element, this.vditor.options.cdn, theme);

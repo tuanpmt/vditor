@@ -72,6 +72,11 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
         }
         mermaid.initialize(config);
         mermaidElements.forEach(async (item) => {
+            // Skip elements in IR/WYSIWYG marker areas (source code blocks)
+            if (item.parentElement.classList.contains("vditor-wysiwyg__pre") ||
+                item.parentElement.classList.contains("vditor-ir__marker--pre")) {
+                return;
+            }
             // Check if already processed with the same theme
             const processedTheme = item.getAttribute("data-theme");
             if (item.getAttribute("data-processed") === "true" && processedTheme === theme) {
