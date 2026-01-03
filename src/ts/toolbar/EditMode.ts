@@ -9,14 +9,13 @@ import {highlightToolbar} from "../util/highlightToolbar";
 import {processCodeRender} from "../util/processCode";
 import {renderToc} from "../util/toc";
 import {renderDomByMd} from "../wysiwyg/renderDomByMd";
-import {MenuItem} from "./MenuItem";
 import {
     disableToolbar,
     enableToolbar,
     hidePanel,
     hideToolbar,
     removeCurrentToolbar,
-    showToolbar, toggleSubMenu,
+    showToolbar,
 } from "./setToolbar";
 import {combineFootnote} from "../sv/combineFootnote";
 
@@ -143,53 +142,56 @@ export const setEditMode = (vditor: IVditor, type: string, event: Event | string
     if (vditor.toolbar.elements["edit-mode"]) {
         vditor.toolbar.elements["edit-mode"].querySelectorAll("button").forEach((item) => {
             item.classList.remove("vditor-menu--current");
+            item.classList.remove("vditor-edit-mode__btn--active");
         });
-        vditor.toolbar.elements["edit-mode"].querySelector(`button[data-mode="${vditor.currentMode}"]`).classList.add("vditor-menu--current");
+        const activeBtn = vditor.toolbar.elements["edit-mode"].querySelector(`button[data-mode="${vditor.currentMode}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add("vditor-menu--current");
+            activeBtn.classList.add("vditor-edit-mode__btn--active");
+        }
     }
 
     vditor.outline.toggle(vditor, vditor.currentMode !== "sv" && vditor.options.outline.enable, typeof event !== "string");
 };
 
-export class EditMode extends MenuItem {
+export class EditMode {
     public element: HTMLElement;
 
     constructor(vditor: IVditor, menuItem: IMenuItem) {
-        super(vditor, menuItem);
+        this.element = document.createElement("div");
+        this.element.className = "vditor-toolbar__item vditor-toolbar__item--edit-mode";
 
-        const panelElement = document.createElement("div");
-        panelElement.className = `vditor-hint${menuItem.level === 2 ? "" : " vditor-panel--arrow"}`;
-        panelElement.innerHTML = `<button data-mode="wysiwyg">${window.VditorI18n.wysiwyg} &lt;${updateHotkeyTip("⌥⌘7")}></button>
-<button data-mode="ir">${window.VditorI18n.instantRendering} &lt;${updateHotkeyTip("⌥⌘8")}></button>
-<button data-mode="sv">${window.VditorI18n.splitView} &lt;${updateHotkeyTip("⌥⌘9")}></button>`;
+        // Get i18n labels with fallbacks
+        const i18n = window.VditorI18n as any;
+        const labelIR = i18n?.instantRendering || "Instant Rendering";
+        const labelSV = i18n?.splitView || "Split View";
+        const labelWYSIWYG = i18n?.wysiwyg || "WYSIWYG";
 
-        this.element.appendChild(panelElement);
+        // Create button group with 3 buttons using SVG icons
+        const buttonGroup = document.createElement("div");
+        buttonGroup.className = "vditor-edit-mode";
+        buttonGroup.innerHTML = `<button data-mode="ir" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelIR} <${updateHotkeyTip("⌥⌘8")}>"><svg><use xlink:href="#vditor-icon-edit"></use></svg></button><button data-mode="sv" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelSV} <${updateHotkeyTip("⌥⌘9")}>"><svg><use xlink:href="#vditor-icon-both"></use></svg></button><button data-mode="wysiwyg" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelWYSIWYG} <${updateHotkeyTip("⌥⌘7")}>"><svg><use xlink:href="#vditor-icon-preview"></use></svg></button>`;
 
-        this._bindEvent(vditor, panelElement, menuItem);
+        this.element.appendChild(buttonGroup);
+
+        this._bindEvent(vditor, buttonGroup);
+
+        // Set initial active state (use options.mode as fallback since currentMode may not be set yet)
+        const initialMode = vditor.currentMode || vditor.options.mode;
+        const currentBtn = buttonGroup.querySelector(`button[data-mode="${initialMode}"]`);
+        if (currentBtn) {
+            currentBtn.classList.add("vditor-edit-mode__btn--active");
+        }
     }
 
-    public _bindEvent(vditor: IVditor, panelElement: HTMLElement, menuItem: IMenuItem) {
-        const actionBtn = this.element.children[0] as HTMLElement;
-        toggleSubMenu(vditor, panelElement, actionBtn, menuItem.level);
-
-        panelElement.children.item(0).addEventListener(getEventName(), (event: Event) => {
-            // wysiwyg
-            setEditMode(vditor, "wysiwyg", event);
-            event.preventDefault();
-            event.stopPropagation();
-        });
-
-        panelElement.children.item(1).addEventListener(getEventName(), (event: Event) => {
-            // ir
-            setEditMode(vditor, "ir", event);
-            event.preventDefault();
-            event.stopPropagation();
-        });
-
-        panelElement.children.item(2).addEventListener(getEventName(), (event: Event) => {
-            // markdown
-            setEditMode(vditor, "sv", event);
-            event.preventDefault();
-            event.stopPropagation();
+    public _bindEvent(vditor: IVditor, buttonGroup: HTMLElement) {
+        buttonGroup.querySelectorAll("button").forEach((btn) => {
+            btn.addEventListener(getEventName(), (event: Event) => {
+                const mode = (event.currentTarget as HTMLElement).getAttribute("data-mode");
+                setEditMode(vditor, mode, event);
+                event.preventDefault();
+                event.stopPropagation();
+            });
         });
     }
 }

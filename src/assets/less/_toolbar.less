@@ -93,6 +93,66 @@
     }
   }
 
+  &-edit-mode {
+    display: inline-flex;
+    align-items: center;
+    height: calc(var(--toolbar-height) - 12px);
+    margin: 6px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--panel-background-color);
+    overflow: visible;
+
+    &__btn {
+      position: relative;
+      border: none;
+      border-right: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--toolbar-icon-color);
+      padding: 0 8px;
+      height: 100%;
+      width: auto !important;
+      cursor: pointer;
+      transition: @transition;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+      }
+
+      &:hover {
+        color: var(--toolbar-icon-hover-color);
+        background-color: var(--second-color);
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &--active {
+        background-color: var(--second-color);
+        color: var(--toolbar-icon-hover-color);
+
+        svg {
+          fill: var(--toolbar-icon-hover-color);
+        }
+
+        &:hover {
+          background-color: var(--second-color);
+          color: var(--toolbar-icon-hover-color);
+        }
+      }
+    }
+  }
+
   &-emojis {
     display: inline-block;
     overflow: auto;
