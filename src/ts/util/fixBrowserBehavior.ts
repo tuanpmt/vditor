@@ -656,7 +656,7 @@ export const insertRowAbove = (vditor: IVditor, range: Range, cellElement: HTMLE
         cellElement.parentElement.parentElement.nextElementSibling.insertAdjacentHTML("afterbegin", theadHTML);
 
         cellElement.parentElement.parentElement.remove();
-        setRangeByWbr(vditor.ir.element, range);
+        setRangeByWbr(vditor[vditor.currentMode].element, range);
     } else {
         cellElement.parentElement.insertAdjacentHTML("beforebegin", `<tr>${rowHTML}</tr>`);
     }

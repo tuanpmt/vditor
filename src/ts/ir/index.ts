@@ -25,6 +25,7 @@ import {hidePanel} from "../toolbar/setToolbar";
 class IR {
     public range: Range;
     public element: HTMLPreElement;
+    public popover: HTMLDivElement;
     public processTimeoutId: number;
     public hlToolbarTimeoutId: number;
     public composingLock: boolean = false;
@@ -35,9 +36,11 @@ class IR {
         divElement.className = "vditor-ir";
 
         divElement.innerHTML = `<pre class="vditor-reset" placeholder="${vditor.options.placeholder}"
- contenteditable="true" spellcheck="false"></pre>`;
+ contenteditable="true" spellcheck="false"></pre>
+<div class="vditor-panel vditor-panel--none"></div>`;
 
         this.element = divElement.firstElementChild as HTMLPreElement;
+        this.popover = divElement.firstElementChild.nextElementSibling as HTMLDivElement;
 
         this.bindEvent(vditor);
 
@@ -77,6 +80,13 @@ class IR {
 
         this.element.addEventListener("scroll", () => {
             hidePanel(vditor, ["hint"]);
+            // Update popover position on scroll
+            if (this.popover && this.popover.style.display !== "none") {
+                const top = parseInt(this.popover.getAttribute("data-top"), 10);
+                if (!isNaN(top)) {
+                    this.popover.style.top = Math.max(-8, top - this.element.scrollTop) + "px";
+                }
+            }
         });
 
         this.element.addEventListener("compositionstart", (event: InputEvent) => {

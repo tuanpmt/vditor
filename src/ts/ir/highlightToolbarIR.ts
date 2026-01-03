@@ -3,6 +3,7 @@ import {disableToolbar, enableToolbar, removeCurrentToolbar, setCurrentToolbar} 
 import {hasClosestByAttribute, hasClosestByMatchTag} from "../util/hasClosest";
 import {hasClosestByHeadings} from "../util/hasClosestByHeadings";
 import {getEditorRange, selectIsEditor} from "../util/selection";
+import {genTablePopover, hideTablePopover} from "../util/tablePopover";
 
 export const highlightToolbarIR = (vditor: IVditor) => {
     clearTimeout(vditor[vditor.currentMode].hlToolbarTimeoutId);
@@ -87,10 +88,27 @@ export const highlightToolbarIR = (vditor: IVditor) => {
             setCurrentToolbar(vditor.toolbar.elements, ["inline-code"]);
         }
 
-        const tableElement = hasClosestByAttribute(typeElement, "data-type", "table");
+        // In IR mode, tables are rendered as HTML TABLE elements directly
+        const tableElement = hasClosestByMatchTag(typeElement, "TABLE") as HTMLTableElement;
         if (tableElement) {
             disableToolbar(vditor.toolbar.elements, ["headings", "list", "ordered-list", "check", "line",
                 "quote", "code", "table"]);
+
+            // Show table popover only in IR mode
+            if (vditor.currentMode === "ir" && vditor.ir.popover) {
+                genTablePopover(vditor, tableElement, range, {
+                    popoverElement: vditor.ir.popover,
+                    editorElement: vditor.ir.element,
+                    afterRenderCallback: () => {
+                        highlightToolbarIR(vditor);
+                    },
+                });
+            }
+        } else {
+            // Hide table popover when not in table (only in IR mode)
+            if (vditor.currentMode === "ir") {
+                hideTablePopover(vditor.ir.popover);
+            }
         }
 
     }, 200);

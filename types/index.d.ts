@@ -943,6 +943,7 @@ interface IVditor {
     ir?: {
         range: Range,
         element: HTMLPreElement,
+        popover: HTMLDivElement,
         composingLock: boolean,
         preventInput: boolean,
         processTimeoutId: number,
