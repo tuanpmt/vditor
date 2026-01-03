@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'Ошибка типа файла',
   'footnoteRef': 'Сноска',
   'fullscreen': 'Переключиться на полный экран',
+  'fullwidth': 'Переключить полную ширину',
   'generate': 'Генерация',
   'headings': 'Заголовки',
   'heading1': 'Заголовок 1 уровня',

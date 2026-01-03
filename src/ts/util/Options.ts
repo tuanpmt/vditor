@@ -111,6 +111,8 @@ export class Options {
             {
                 name: "more",
                 toolbar: [
+                    "fullscreen",
+                    "fullwidth",
                     "both",
                     "code-theme",
                     "content-theme",
@@ -374,6 +376,12 @@ export class Options {
                 icon:
                     '<svg><use xlink:href="#vditor-icon-fullscreen"></use></svg>',
                 name: "fullscreen",
+                tipPosition: "nw",
+            },
+            {
+                icon:
+                    '<svg><use xlink:href="#vditor-icon-fullwidth"></use></svg>',
+                name: "fullwidth",
                 tipPosition: "nw",
             },
             {

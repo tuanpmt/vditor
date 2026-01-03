@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'Tipo de archivo no permitido, comprímelo antes de subirlo',
   'footnoteRef': 'Referencia de nota al pie',
   'fullscreen': 'Pantalla completa',
+  'fullwidth': 'Ancho completo',
   'generate': 'Generando',
   'headings': 'Encabezados',
   'heading1': 'Encabezado 1',

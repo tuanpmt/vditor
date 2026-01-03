@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'Loại tệp không được phép tải lên, vui lòng nén lại trước khi thử',
   'footnoteRef': 'Chú thích cuối trang',
   'fullscreen': 'Chuyển toàn màn hình',
+  'fullwidth': 'Chuyển toàn chiều rộng',
   'generate': 'Đang tạo',
   'headings': 'Tiêu đề',
   'heading1': 'Tiêu đề cấp 1',

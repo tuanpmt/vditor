@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': '지원하지않습니다.',
   'footnoteRef': '각주참조',
   'fullscreen': '전체화면',
+  'fullwidth': '전체 너비',
   'generate': '생성',
   'headings': '제목크기',
   'heading1': '첫 번째 수준 제목',

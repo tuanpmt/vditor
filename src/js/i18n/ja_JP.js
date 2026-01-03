@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'サポートしていません。',
   'footnoteRef': '脚注参照',
   'fullscreen': 'フルスクリーン',
+  'fullwidth': 'フル幅',
   'generate': '作成する',
   'headings': '見出しの大きさ',
   'heading1': '見出し1',

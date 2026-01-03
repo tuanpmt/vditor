@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'file type is error',
   'footnoteRef': 'Footnote Ref',
   'fullscreen': 'Toggle Fullscreen',
+  'fullwidth': 'Toggle Fullwidth',
   'generate': 'Generating',
   'headings': 'Headings',
   'heading1': 'Heading 1',

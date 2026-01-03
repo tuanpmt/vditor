@@ -11,6 +11,7 @@ import {EditMode} from "./EditMode";
 import {Emoji} from "./Emoji";
 import {Export} from "./Export";
 import {Fullscreen} from "./Fullscreen";
+import {Fullwidth} from "./Fullwidth";
 import {Headings} from "./Headings";
 import {Help} from "./Help";
 import {Indent} from "./Indent";
@@ -133,6 +134,9 @@ export class Toolbar {
                 break;
             case "fullscreen":
                 menuItemObj = new Fullscreen(vditor, menuItem);
+                break;
+            case "fullwidth":
+                menuItemObj = new Fullwidth(vditor, menuItem);
                 break;
             case "upload":
                 menuItemObj = new Upload(vditor, menuItem);

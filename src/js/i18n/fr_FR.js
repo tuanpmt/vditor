@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'erreur de type de fichier',
   'footnoteRef': 'Ref. notes de pied de page',
   'fullscreen': 'Bascule en plein écran',
+  'fullwidth': 'Bascule en pleine largeur',
   'generate': 'Création',
   'headings': 'Titres',
   'heading1': 'Titre 1',

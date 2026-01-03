@@ -41,6 +41,7 @@ if (window.innerWidth < 768) {
             name: "more",
             toolbar: [
                 "fullscreen",
+                "fullwidth",
                 "both",
                 "preview",
                 "info",

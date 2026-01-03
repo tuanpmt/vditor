@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'Dateityp-Fehler',
   'footnoteRef': 'Fußnotenverweis',
   'fullscreen': 'Vollbild umschalten',
+  'fullwidth': 'Volle Breite umschalten',
   'generate': 'Wird generiert',
   'headings': 'Überschriften',
   'heading1': 'Überschrift 1',

@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': '文件类型不允许上传，请压缩后再试',
   'footnoteRef': '脚注标识',
   'fullscreen': '全屏切换',
+  'fullwidth': '宽屏切换',
   'generate': '生成中',
   'headings': '标题',
   'heading1': '一级标题',

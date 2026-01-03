@@ -28,6 +28,7 @@
   'fileTypeError': 'Fel filtyp',
   'footnoteRef': 'Fotnotreferens',
   'fullscreen': 'Skifta fullskärmsläge',
+  'fullwidth': 'Skifta full bredd',
   'generate': 'Genererar',
   'headings': 'Rubriker',
   'heading1': 'Rubriknivå 1',

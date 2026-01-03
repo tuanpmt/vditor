@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': '檔案類型不允許上傳',
   'footnoteRef': '腳註參考',
   'fullscreen': '全螢幕切換',
+  'fullwidth': '寬屏切換',
   'generate': '生成中',
   'headings': '標題',
   'heading1': '一級標題',

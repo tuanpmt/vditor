@@ -28,6 +28,7 @@ window.VditorI18n = {
   'fileTypeError': 'Tipo de arquivo incorreto',
   'footnoteRef': 'Referência de rodapé',
   'fullscreen': 'Alternar tela cheia',
+  'fullwidth': 'Alternar largura total',
   'generate': 'Gerando',
   'headings': 'Cabeçalhos',
   'heading1': 'Cabeçalho 1',
