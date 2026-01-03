@@ -409,6 +409,193 @@ export class MonacoManager {
 // Languages that need live preview (graphics/diagrams)
 const GRAPHIC_LANGUAGES = ["mermaid", "flowchart", "mindmap", "echarts", "plantuml", "graphviz", "abc", "markmap", "math", "wavedrom"];
 
+// Mermaid config options
+const MERMAID_LAYOUTS = [
+    {value: "", label: "Default"},
+    {value: "dagre", label: "Dagre (classic)"},
+    {value: "elk", label: "ELK"},
+    {value: "elk.layered", label: "ELK Layered"},
+    {value: "elk.stress", label: "ELK Stress"},
+    {value: "elk.force", label: "ELK Force"},
+    {value: "elk.mrtree", label: "ELK MrTree"},
+    {value: "elk.sporeOverlap", label: "ELK Spore"},
+    {value: "tidy-tree", label: "Tidy Tree"},
+];
+
+const MERMAID_THEMES = [
+    {value: "", label: "Default"},
+    {value: "default", label: "Mermaid Default"},
+    {value: "forest", label: "Forest"},
+    {value: "dark", label: "Dark"},
+    {value: "neutral", label: "Neutral"},
+    {value: "base", label: "Base"},
+];
+
+const MERMAID_LOOKS = [
+    {value: "", label: "Default"},
+    {value: "classic", label: "Classic"},
+    {value: "handDrawn", label: "Hand Drawn"},
+    {value: "neo", label: "Neo"},
+];
+
+/**
+ * Parse mermaid frontmatter config
+ */
+const parseMermaidConfig = (code: string): {config: Record<string, string>, content: string, hasConfig: boolean} => {
+    const frontmatterMatch = code.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+    if (!frontmatterMatch) {
+        return {config: {}, content: code, hasConfig: false};
+    }
+
+    const config: Record<string, string> = {};
+    const configSection = frontmatterMatch[1];
+
+    // Parse config section - look for "config:" block
+    const configMatch = configSection.match(/config:\s*\n((?:\s+\w+:.*\n?)*)/);
+    if (configMatch) {
+        const configLines = configMatch[1].split("\n");
+        configLines.forEach((line) => {
+            const match = line.match(/^\s+(\w+):\s*(.+?)\s*$/);
+            if (match) {
+                config[match[1]] = match[2].replace(/['"]/g, "");
+            }
+        });
+    }
+
+    return {
+        config,
+        content: code.slice(frontmatterMatch[0].length),
+        hasConfig: true,
+    };
+};
+
+/**
+ * Generate mermaid frontmatter from config
+ */
+const generateMermaidFrontmatter = (config: Record<string, string>): string => {
+    const entries = Object.entries(config).filter(([_, v]) => v);
+    if (entries.length === 0) {
+        return "";
+    }
+
+    let frontmatter = "---\nconfig:\n";
+    entries.forEach(([key, value]) => {
+        frontmatter += `  ${key}: ${value}\n`;
+    });
+    frontmatter += "---\n";
+    return frontmatter;
+};
+
+/**
+ * Update mermaid code with new config value
+ */
+const updateMermaidConfig = (code: string, key: string, value: string): string => {
+    const {config, content} = parseMermaidConfig(code);
+    if (value) {
+        config[key] = value;
+    } else {
+        delete config[key];
+    }
+    return generateMermaidFrontmatter(config) + content;
+};
+
+/**
+ * Create mermaid toolbar for Monaco editor
+ */
+const createMermaidToolbar = (
+    editor: any,
+    codeElement: HTMLElement,
+    onUpdate: (content: string) => void,
+): HTMLElement => {
+    const toolbar = document.createElement("div");
+    toolbar.className = "vditor-monaco-mermaid-toolbar";
+    toolbar.setAttribute("contenteditable", "false");
+
+    // Get current config
+    const code = editor.getValue();
+    const {config} = parseMermaidConfig(code);
+
+    // Create dropdown button
+    const createDropdown = (
+        label: string,
+        options: Array<{value: string, label: string}>,
+        configKey: string,
+        currentValue: string,
+    ): HTMLElement => {
+        const container = document.createElement("div");
+        container.className = "vditor-monaco-mermaid-dropdown";
+
+        const button = document.createElement("button");
+        button.className = "vditor-monaco-mermaid-btn";
+        const selectedOption = options.find((o) => o.value === currentValue);
+        button.textContent = `${label}: ${selectedOption?.label || options[0].label}`;
+        button.type = "button";
+
+        const menu = document.createElement("div");
+        menu.className = "vditor-monaco-mermaid-menu";
+        menu.style.display = "none";
+
+        options.forEach((option) => {
+            const item = document.createElement("div");
+            item.className = "vditor-monaco-mermaid-menu-item";
+            if (option.value === currentValue) {
+                item.classList.add("vditor-monaco-mermaid-menu-item--active");
+            }
+            item.textContent = option.label;
+            item.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const currentCode = editor.getValue();
+                const newCode = updateMermaidConfig(currentCode, configKey, option.value);
+                editor.setValue(newCode);
+                codeElement.textContent = newCode;
+                onUpdate(newCode);
+
+                // Update button text
+                button.textContent = `${label}: ${option.label}`;
+
+                // Update active state
+                menu.querySelectorAll(".vditor-monaco-mermaid-menu-item").forEach((el) => {
+                    el.classList.remove("vditor-monaco-mermaid-menu-item--active");
+                });
+                item.classList.add("vditor-monaco-mermaid-menu-item--active");
+
+                // Close menu
+                menu.style.display = "none";
+            });
+            menu.appendChild(item);
+        });
+
+        button.addEventListener("click", (e) => {
+            e.stopPropagation();
+            // Close other menus
+            toolbar.querySelectorAll(".vditor-monaco-mermaid-menu").forEach((m) => {
+                if (m !== menu) {
+                    (m as HTMLElement).style.display = "none";
+                }
+            });
+            menu.style.display = menu.style.display === "none" ? "block" : "none";
+        });
+
+        container.appendChild(button);
+        container.appendChild(menu);
+        return container;
+    };
+
+    // Add dropdowns
+    toolbar.appendChild(createDropdown("Layout", MERMAID_LAYOUTS, "layout", config.layout || ""));
+    toolbar.appendChild(createDropdown("Theme", MERMAID_THEMES, "theme", config.theme || ""));
+    toolbar.appendChild(createDropdown("Look", MERMAID_LOOKS, "look", config.look || ""));
+
+    // Close menus when clicking outside
+    document.addEventListener("click", () => {
+        toolbar.querySelectorAll(".vditor-monaco-mermaid-menu").forEach((m) => {
+            (m as HTMLElement).style.display = "none";
+        });
+    });
+
+    return toolbar;
+};
+
 /**
  * Check if language needs graphic preview
  */
@@ -509,6 +696,19 @@ export const initMonacoForCodeBlock = async (
             debouncedPreviewUpdate(content);
         }
     });
+
+    // Add mermaid toolbar if language is mermaid
+    if (editor && language.toLowerCase() === "mermaid") {
+        const toolbar = createMermaidToolbar(editor, codeElement, (content: string) => {
+            if (onChange) {
+                onChange(content);
+            }
+            if (debouncedPreviewUpdate) {
+                debouncedPreviewUpdate(content);
+            }
+        });
+        monacoWrapper.insertBefore(toolbar, monacoWrapper.firstChild);
+    }
 
     // Add blur handler to destroy Monaco and show preview when focus is lost
     if (editor) {

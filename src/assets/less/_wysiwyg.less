@@ -197,6 +197,63 @@
     background-color: var(--panel-background-color);
     border: 1px solid var(--border-color);
   }
+
+  // Mermaid toolbar styles
+  .vditor-monaco-mermaid-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background-color: var(--toolbar-background-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .vditor-monaco-mermaid-dropdown {
+    position: relative;
+  }
+
+  .vditor-monaco-mermaid-btn {
+    padding: 4px 12px;
+    font-size: 12px;
+    background-color: var(--panel-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--textarea-text-color);
+    white-space: nowrap;
+
+    &:hover {
+      background-color: var(--toolbar-hover-color);
+    }
+  }
+
+  .vditor-monaco-mermaid-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    min-width: 140px;
+    margin-top: 4px;
+    background-color: var(--panel-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .vditor-monaco-mermaid-menu-item {
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--textarea-text-color);
+
+    &:hover {
+      background-color: var(--toolbar-hover-color);
+    }
+
+    &--active {
+      background-color: var(--toolbar-hover-color);
+      font-weight: 600;
+    }
+  }
 }
 
 @media screen and (max-width: @max-width) {
