@@ -10,6 +10,166 @@ const MONACO_CDN = "https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/min";
 // Monaco module cache
 let monacoModule: any = null;
 let monacoLoading: Promise<any> | null = null;
+let mermaidLanguageRegistered = false;
+
+/**
+ * Register Mermaid language with Monaco Editor
+ */
+const registerMermaidLanguage = (monacoLib: any) => {
+    if (mermaidLanguageRegistered) {
+        return;
+    }
+
+    // Register the language
+    monacoLib.languages.register({id: "mermaid"});
+
+    // Set language configuration (brackets, comments, etc.)
+    monacoLib.languages.setLanguageConfiguration("mermaid", {
+        comments: {
+            lineComment: "%%",
+        },
+        brackets: [
+            ["{", "}"],
+            ["[", "]"],
+            ["(", ")"],
+        ],
+        autoClosingPairs: [
+            {open: "{", close: "}"},
+            {open: "[", close: "]"},
+            {open: "(", close: ")"},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
+        ],
+        surroundingPairs: [
+            {open: "{", close: "}"},
+            {open: "[", close: "]"},
+            {open: "(", close: ")"},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
+        ],
+    });
+
+    // Set tokenizer for syntax highlighting
+    monacoLib.languages.setMonarchTokensProvider("mermaid", {
+        defaultToken: "",
+        tokenPostfix: ".mermaid",
+
+        // Diagram types
+        diagramTypes: [
+            "graph", "flowchart", "sequenceDiagram", "classDiagram", "stateDiagram",
+            "stateDiagram-v2", "erDiagram", "journey", "gantt", "pie", "quadrantChart",
+            "requirementDiagram", "gitGraph", "mindmap", "timeline", "zenuml",
+            "sankey-beta", "xychart-beta", "block-beta",
+        ],
+
+        // Keywords
+        keywords: [
+            // General
+            "subgraph", "end", "direction", "click", "callback", "link", "class",
+            "classDef", "style", "linkStyle", "title", "accTitle", "accDescr",
+            // Sequence diagram
+            "participant", "actor", "note", "activate", "deactivate", "loop",
+            "alt", "else", "opt", "par", "and", "critical", "option", "break",
+            "rect", "autonumber", "over", "of", "left", "right",
+            // State diagram
+            "state", "as", "fork", "join", "choice",
+            // Gantt
+            "dateFormat", "axisFormat", "tickInterval", "excludes", "includes",
+            "section", "done", "active", "crit", "milestone", "after", "until",
+            // ER diagram
+            "PK", "FK", "UK",
+            // Git graph
+            "commit", "branch", "checkout", "merge", "cherry-pick", "tag", "id", "type", "msg",
+            // Class diagram
+            "namespace",
+            // Pie
+            "showData",
+            // Mindmap
+            "root",
+        ],
+
+        // Direction keywords
+        directions: ["TB", "TD", "BT", "RL", "LR"],
+
+        // Operators
+        operators: [
+            "-->", "---", "-.-", "-.->", "==>", "===", "-..-", "-..->",
+            "-->|", "---|", "-.-|", "-.->|", "==>|", "--x", "--o",
+            "o--", "x--", "<-->", "<-.->", "<==>",
+        ],
+
+        // Tokenizer rules
+        tokenizer: {
+            root: [
+                // Comments
+                [/%%.*$/, "comment"],
+
+                // Diagram type declarations (at start of diagram)
+                [/^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|stateDiagram-v2|erDiagram|journey|gantt|pie|quadrantChart|requirementDiagram|gitGraph|mindmap|timeline|zenuml|sankey-beta|xychart-beta|block-beta)\b/, "keyword.diagram"],
+
+                // Direction after graph/flowchart
+                [/\b(TB|TD|BT|RL|LR)\b/, "keyword.direction"],
+
+                // Keywords
+                [/\b(subgraph|end|direction|click|callback|link|class|classDef|style|linkStyle|title|accTitle|accDescr|participant|actor|note|activate|deactivate|loop|alt|else|opt|par|and|critical|option|break|rect|autonumber|over|left|right|of|state|as|fork|join|choice|dateFormat|axisFormat|tickInterval|excludes|includes|section|done|active|crit|milestone|after|until|PK|FK|UK|commit|branch|checkout|merge|tag|namespace|showData|root)\b/, "keyword"],
+
+                // State diagram special markers <<fork>>, <<join>>, <<choice>>
+                [/<<(fork|join|choice)>>/, "keyword.special"],
+
+                // ER diagram relationship operators
+                [/\|o|o\||o\{|\}o|\|\||\{\||\|\{|\}\|/, "operator.er"],
+                [/\.\./, "operator.er"],
+
+                // Strings
+                [/"[^"]*"/, "string"],
+                [/'[^']*'/, "string"],
+
+                // Node shapes with text - match the brackets
+                [/\[\[/, "delimiter.bracket"], // Stadium shape start
+                [/\]\]/, "delimiter.bracket"], // Stadium shape end
+                [/\[\(/, "delimiter.bracket"], // Cylindrical start
+                [/\)\]/, "delimiter.bracket"], // Cylindrical end
+                [/\[\{/, "delimiter.bracket"], // Hexagon start
+                [/\}\]/, "delimiter.bracket"], // Hexagon end
+                [/\(\(/, "delimiter.bracket"], // Circle start
+                [/\)\)/, "delimiter.bracket"], // Circle end
+                [/\{\{/, "delimiter.bracket"], // Rhombus start
+                [/\}\}/, "delimiter.bracket"], // Rhombus end
+                [/\[\//, "delimiter.bracket"], // Parallelogram start
+                [/\/\]/, "delimiter.bracket"], // Parallelogram end
+                [/\[\\/, "delimiter.bracket"], // Parallelogram alt start
+                [/\\\]/, "delimiter.bracket"], // Parallelogram alt end
+                [/>\]/, "delimiter.bracket"], // Asymmetric end
+
+                // Regular brackets
+                [/[\[\]{}()]/, "delimiter.bracket"],
+
+                // Arrows and connections (order matters - longer first)
+                [/<-->|<-.->|<==>/, "operator.arrow"],
+                [/-->>|--x|--o|o--|x--/, "operator.arrow"],
+                [/-->|---|-\.->|-\.-|==>|===/, "operator.arrow"],
+                [/\|[^|]*\|/, "string.link"], // Link text |text|
+
+                // Node IDs (alphanumeric starting with letter)
+                [/[a-zA-Z_]\w*/, "identifier"],
+
+                // Numbers
+                [/\d+/, "number"],
+
+                // Whitespace
+                [/\s+/, "white"],
+
+                // Pipe for labels
+                [/\|/, "delimiter"],
+
+                // Other punctuation
+                [/[;,:]/, "delimiter"],
+            ],
+        },
+    });
+
+    mermaidLanguageRegistered = true;
+};
 
 /**
  * Lazy load Monaco Editor from CDN
@@ -39,6 +199,8 @@ export const loadMonaco = async (cdn: string): Promise<any> => {
         return new Promise<any>((resolve, reject) => {
             amdRequire(["vs/editor/editor.main"], () => {
                 monacoModule = monaco;
+                // Register custom languages
+                registerMermaidLanguage(monacoModule);
                 resolve(monacoModule);
             }, (error: any) => {
                 monacoLoading = null;
@@ -169,7 +331,7 @@ export class MonacoManager {
             "c#": "csharp",
             golang: "go",
             // Special blocks - use plaintext
-            mermaid: "plaintext",
+            mermaid: "mermaid",
             flowchart: "plaintext",
             mindmap: "plaintext",
             echarts: "json",
