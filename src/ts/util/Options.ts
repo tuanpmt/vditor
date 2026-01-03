@@ -116,6 +116,7 @@ export class Options {
                     "both",
                     "code-theme",
                     "content-theme",
+                    "mermaid-config",
                     "export",
                     "outline",
                     "preview",
