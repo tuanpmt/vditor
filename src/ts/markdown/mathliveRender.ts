@@ -58,20 +58,19 @@ export const renderMathLivePreview = (
         previewElement.innerHTML = "";
 
         // Create read-only MathfieldElement
-        const mathfield = new MathfieldElement();
+        const mathfield = new MathfieldElement({
+            readOnly: true,
+            letterShapeStyle: "tex",
+            virtualKeyboardMode: "off",
+        });
         mathfield.className = "vditor-mathlive-preview";
-        mathfield.value = mathContent;
-
-        // Configure for read-only display
-        mathfield.readOnly = true;
-        mathfield.letterShapeStyle = "tex";
-        mathfield.virtualKeyboardMode = "off";
-        mathfield.menuItems = [];
 
         // Make it non-focusable
         mathfield.setAttribute("tabindex", "-1");
 
+        // Append first, then set value (some properties need mounted element)
         previewElement.appendChild(mathfield);
+        mathfield.value = mathContent;
     });
 };
 
@@ -131,15 +130,12 @@ export const initMathLiveForMathBlock = async (
     monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
 
     // Create MathLive render (BOTTOM - read-only for preview)
-    const mathfield = new MathfieldElement();
+    const mathfield = new MathfieldElement({
+        readOnly: true,
+        letterShapeStyle: "tex",
+        virtualKeyboardMode: "off",
+    });
     mathfield.className = "vditor-mathlive-field";
-    mathfield.value = mathContent;
-
-    // Configure mathfield for read-only render (not editing)
-    mathfield.readOnly = true;
-    mathfield.letterShapeStyle = "tex";
-    mathfield.virtualKeyboardMode = "off";
-    mathfield.menuItems = [];
     mathfield.setAttribute("tabindex", "-1");
 
     // Sync function to update MathLive from Monaco
@@ -158,6 +154,9 @@ export const initMathLiveForMathBlock = async (
     } else if (preElement) {
         preElement.parentElement?.insertBefore(editorWrapper, preElement.nextSibling);
     }
+
+    // Set initial value after mounting
+    mathfield.value = mathContent;
 
     // Initialize Monaco editor if available
     if (vditor.monaco?.isEnabled()) {
