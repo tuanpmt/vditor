@@ -980,6 +980,9 @@ const createLayoutToggle = (
         }
         monacoWrapper.style.width = "";
         previewElement.style.width = "";
+        // Reset scroll position when switching to row layout
+        previewElement.scrollLeft = 0;
+        previewElement.scrollTop = 0;
     };
 
     const toggleLayout = () => {
