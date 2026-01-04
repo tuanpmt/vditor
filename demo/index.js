@@ -12,6 +12,7 @@ if (window.innerWidth < 768) {
         "italic",
         "strike",
         "link",
+        "image",
         "|",
         "list",
         "ordered-list",

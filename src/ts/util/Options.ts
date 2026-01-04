@@ -85,6 +85,7 @@ export class Options {
             "italic",
             "strike",
             "link",
+            "image",
             "|",
             "list",
             "ordered-list",
