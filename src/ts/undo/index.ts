@@ -1,4 +1,4 @@
-import * as DiffMatchPatch from "diff-match-patch";
+import {diff_match_patch, patch_obj, Diff} from "diff-match-patch";
 import {disableToolbar, enableToolbar, hidePanel} from "../toolbar/setToolbar";
 import {isFirefox, isSafari} from "../util/compatibility";
 import {scrollCenter} from "../util/editorCommonEvent";
@@ -11,21 +11,20 @@ import {renderToc} from "../util/toc";
 interface IUndo {
     hasUndo: boolean;
     lastText: string;
-    redoStack: DiffMatchPatch.patch_obj[][];
-    undoStack: DiffMatchPatch.patch_obj[][];
+    redoStack: patch_obj[][];
+    undoStack: patch_obj[][];
 }
 
 class Undo {
     private stackSize = 50;
-    private dmp: DiffMatchPatch.diff_match_patch;
+    private dmp: diff_match_patch;
     private wysiwyg: IUndo;
     private ir: IUndo;
     private sv: IUndo;
 
     constructor() {
         this.resetStack();
-        // @ts-ignore
-        this.dmp = new DiffMatchPatch();
+        this.dmp = new diff_match_patch();
     }
 
     public clearStack(vditor: IVditor) {
@@ -132,13 +131,13 @@ class Undo {
         }
     }
 
-    private renderDiff(state: DiffMatchPatch.patch_obj[], vditor: IVditor, isRedo: boolean = false) {
+    private renderDiff(state: patch_obj[], vditor: IVditor, isRedo: boolean = false) {
         let text;
         if (isRedo) {
             const redoPatchList = this.dmp.patch_deepCopy(state).reverse();
-            redoPatchList.forEach((patch) => {
-                patch.diffs.forEach((diff) => {
-                    diff[0] = -diff[0];
+            redoPatchList.forEach((patch: patch_obj) => {
+                patch.diffs.forEach((diff: Diff) => {
+                    diff[0] = -diff[0] as number;
                 });
             });
             text = this.dmp.patch_apply(redoPatchList, this[vditor.currentMode].lastText)[0];
