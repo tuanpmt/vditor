@@ -56,7 +56,6 @@ window.addEventListener("message", (e) => {
 export const exportHTML = (vditor: IVditor) => {
     const content = getHTML(vditor);
     const html = `<html><head><link rel="stylesheet" type="text/css" href="${vditor.options.cdn}/dist/index.css"/>
-<script src="${vditor.options.cdn}/dist/js/i18n/${vditor.options.lang}.js"></script>
 <script src="${vditor.options.cdn}/dist/method.min.js"></script></head>
 <body><div class="vditor-reset" id="preview">${content}</div>
 <script>
