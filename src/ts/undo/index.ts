@@ -17,7 +17,7 @@ interface IUndo {
 
 class Undo {
     private stackSize = 50;
-    private dmp: diff_match_patch;
+    private dmp: InstanceType<typeof diff_match_patch>;
     private wysiwyg: IUndo;
     private ir: IUndo;
     private sv: IUndo;
