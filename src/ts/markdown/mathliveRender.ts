@@ -36,6 +36,7 @@ export const loadMathLive = async (cdn: string): Promise<void> => {
 /**
  * Render math preview using MathLive (read-only mode)
  * This replaces KaTeX/MathJax for math block previews
+ * Clicking on preview will enter edit mode
  */
 export const renderMathLivePreview = (
     previewElement: HTMLElement,
@@ -79,6 +80,19 @@ export const renderMathLivePreview = (
 
         // Make it non-focusable
         mathfield.setAttribute("tabindex", "-1");
+
+        // Add click handler to enter edit mode
+        const handleClick = () => {
+            const mathBlockElement = previewElement.parentElement;
+            if (mathBlockElement && mathBlockElement.getAttribute("data-type") === "math-block") {
+                // Add expand class and init editor
+                mathBlockElement.classList.add("vditor-ir__node--expand");
+                mathBlockElement.classList.remove("vditor-ir__node--hidden");
+                initMathLiveForMathBlock(mathBlockElement, vditor);
+            }
+        };
+        mathfield.addEventListener("click", handleClick);
+        previewElement.addEventListener("click", handleClick);
 
         // Append first, then set value (some properties need mounted element)
         previewElement.appendChild(mathfield);
@@ -153,20 +167,44 @@ export const initMathLiveForMathBlock = async (
     const monacoWrapper = document.createElement("div");
     monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
 
-    // Create MathLive render (BOTTOM - read-only for preview)
+    // Create MathLive editor (BOTTOM - editable for visual editing)
     const mathfield = new MathfieldElement({
-        readOnly: true,
+        readOnly: false,
         letterShapeStyle: "tex",
-        virtualKeyboardMode: "off",
+        smartMode: true,
+        virtualKeyboardMode: "manual",
     });
     mathfield.className = "vditor-mathlive-field";
-    mathfield.setAttribute("tabindex", "-1");
+
+    // Sync flag to prevent infinite loops
+    let isSyncing = false;
 
     // Sync function to update MathLive from Monaco
     const syncFromMonaco = (newValue: string) => {
+        if (isSyncing) return;
+        isSyncing = true;
         codeElement.textContent = newValue;
-        mathfield.value = newValue;
+        if (mathfield.value !== newValue) {
+            mathfield.value = newValue;
+        }
+        isSyncing = false;
     };
+
+    // Sync function to update Monaco from MathLive
+    const syncFromMathLive = () => {
+        if (isSyncing) return;
+        isSyncing = true;
+        const newValue = mathfield.value;
+        codeElement.textContent = newValue;
+        const monacoEditor = (monacoWrapper as any).__monacoEditor;
+        if (monacoEditor && monacoEditor.getValue() !== newValue) {
+            monacoEditor.setValue(newValue);
+        }
+        isSyncing = false;
+    };
+
+    // Listen for MathLive input changes
+    mathfield.addEventListener("input", syncFromMathLive);
 
     // Add Monaco (top) then MathLive (bottom)
     editorWrapper.appendChild(monacoWrapper);
