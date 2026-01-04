@@ -6,7 +6,7 @@ import {Hint} from "./ts/hint/index";
 import {IR} from "./ts/ir/index";
 import {input as irInput} from "./ts/ir/input";
 import {processAfterRender} from "./ts/ir/process";
-import {getHTML, getRenderedHTML} from "./ts/markdown/getHTML";
+import {getHTML, getRenderedHTML, getRenderedHTMLWithFonts, generateEmbeddedFontCSS} from "./ts/markdown/getHTML";
 import {getMarkdown} from "./ts/markdown/getMarkdown";
 import {setLute} from "./ts/markdown/setLute";
 import {MonacoManager} from "./ts/markdown/monacoRender";
@@ -323,6 +323,23 @@ class Vditor extends VditorMethod {
      */
     public getRenderedHTML() {
         return getRenderedHTML(this.vditor);
+    }
+
+    /**
+     * Get rendered HTML with embedded fonts (async)
+     * Returns complete HTML with @font-face rules and base64 encoded fonts
+     * Useful for PDF export where fonts need to be self-contained
+     */
+    public async getRenderedHTMLWithFonts(): Promise<string> {
+        return getRenderedHTMLWithFonts(this.vditor);
+    }
+
+    /**
+     * Generate @font-face CSS with embedded base64 fonts (async)
+     * Useful for PDF export where fonts need to be self-contained
+     */
+    public async getEmbeddedFontCSS(): Promise<string> {
+        return generateEmbeddedFontCSS(this.vditor.options.cdn);
     }
 
     /** 消息提示。time 为 0 将一直显示 */
