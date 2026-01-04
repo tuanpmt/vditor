@@ -790,80 +790,85 @@ const createLayoutToggle = (
     codeBlockElement: HTMLElement,
     monacoWrapper: HTMLElement,
     previewElement: HTMLElement,
+    defaultColumnLayout: boolean = true,
 ): HTMLElement => {
     const button = document.createElement("button");
     button.className = "vditor-monaco-layout-btn";
     button.type = "button";
     button.setAttribute("contenteditable", "false");
-    button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M10 4H4v16h6V4zm2 0v16h8V4h-8z"/></svg>';
-    button.title = "Toggle Layout (Row/Column)";
 
-    let isColumnLayout = false;
+    let isColumnLayout = false; // Will be toggled to true if defaultColumnLayout
     let resizer: HTMLElement | null = null;
 
+    const createResizer = () => {
+        if (resizer) return resizer;
+
+        resizer = document.createElement("div");
+        resizer.className = "vditor-monaco-resizer";
+        resizer.setAttribute("contenteditable", "false");
+
+        let startX = 0;
+        let startWidth = 0;
+
+        const onMouseMove = (e: MouseEvent) => {
+            const diff = e.clientX - startX;
+            const containerWidth = codeBlockElement.offsetWidth;
+            const newWidth = Math.max(200, Math.min(containerWidth - 200, startWidth + diff));
+            const percentage = (newWidth / containerWidth) * 100;
+            monacoWrapper.style.width = `${percentage}%`;
+            previewElement.style.width = `${100 - percentage}%`;
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+            codeBlockElement.classList.remove("vditor-code-block--resizing");
+        };
+
+        resizer.addEventListener("mousedown", (e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startX = e.clientX;
+            startWidth = monacoWrapper.offsetWidth;
+            codeBlockElement.classList.add("vditor-code-block--resizing");
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
+
+        return resizer;
+    };
+
+    const setColumnLayout = () => {
+        isColumnLayout = true;
+        codeBlockElement.classList.add("vditor-code-block--column");
+        button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M4 4h16v6H4V4zm0 8h16v8H4v-8z"/></svg>';
+        button.title = "Switch to Row Layout";
+
+        const resizerEl = createResizer();
+        monacoWrapper.style.width = "50%";
+        previewElement.style.width = "50%";
+        previewElement.style.display = "";
+        monacoWrapper.parentElement?.insertBefore(resizerEl, previewElement);
+    };
+
+    const setRowLayout = () => {
+        isColumnLayout = false;
+        codeBlockElement.classList.remove("vditor-code-block--column");
+        button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M10 4H4v16h6V4zm2 0v16h8V4h-8z"/></svg>';
+        button.title = "Switch to Column Layout";
+
+        if (resizer && resizer.parentElement) {
+            resizer.remove();
+        }
+        monacoWrapper.style.width = "";
+        previewElement.style.width = "";
+    };
+
     const toggleLayout = () => {
-        isColumnLayout = !isColumnLayout;
-
         if (isColumnLayout) {
-            // Column layout
-            codeBlockElement.classList.add("vditor-code-block--column");
-            button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M4 4h16v6H4V4zm0 8h16v8H4v-8z"/></svg>';
-            button.title = "Switch to Row Layout";
-
-            // Create resizer if not exists
-            if (!resizer) {
-                resizer = document.createElement("div");
-                resizer.className = "vditor-monaco-resizer";
-                resizer.setAttribute("contenteditable", "false");
-
-                let startX = 0;
-                let startWidth = 0;
-
-                const onMouseMove = (e: MouseEvent) => {
-                    const diff = e.clientX - startX;
-                    const containerWidth = codeBlockElement.offsetWidth;
-                    const newWidth = Math.max(200, Math.min(containerWidth - 200, startWidth + diff));
-                    const percentage = (newWidth / containerWidth) * 100;
-                    monacoWrapper.style.width = `${percentage}%`;
-                    previewElement.style.width = `${100 - percentage}%`;
-                };
-
-                const onMouseUp = () => {
-                    document.removeEventListener("mousemove", onMouseMove);
-                    document.removeEventListener("mouseup", onMouseUp);
-                    codeBlockElement.classList.remove("vditor-code-block--resizing");
-                };
-
-                resizer.addEventListener("mousedown", (e: MouseEvent) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    startX = e.clientX;
-                    startWidth = monacoWrapper.offsetWidth;
-                    codeBlockElement.classList.add("vditor-code-block--resizing");
-                    document.addEventListener("mousemove", onMouseMove);
-                    document.addEventListener("mouseup", onMouseUp);
-                });
-            }
-
-            // Insert resizer between monacoWrapper and previewElement
-            monacoWrapper.style.width = "50%";
-            previewElement.style.width = "50%";
-            previewElement.style.display = "";
-            monacoWrapper.parentElement?.insertBefore(resizer, previewElement);
+            setRowLayout();
         } else {
-            // Row layout
-            codeBlockElement.classList.remove("vditor-code-block--column");
-            button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M10 4H4v16h6V4zm2 0v16h8V4h-8z"/></svg>';
-            button.title = "Switch to Column Layout";
-
-            // Remove resizer
-            if (resizer && resizer.parentElement) {
-                resizer.remove();
-            }
-
-            // Reset widths
-            monacoWrapper.style.width = "";
-            previewElement.style.width = "";
+            setColumnLayout();
         }
     };
 
@@ -872,6 +877,13 @@ const createLayoutToggle = (
         e.stopPropagation();
         toggleLayout();
     });
+
+    // Set default layout
+    if (defaultColumnLayout) {
+        setColumnLayout();
+    } else {
+        setRowLayout();
+    }
 
     return button;
 };
