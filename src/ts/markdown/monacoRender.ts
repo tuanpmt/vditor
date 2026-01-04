@@ -12,6 +12,9 @@ let monacoLoading: Promise<any> | null = null;
 let mermaidLanguageRegistered = false;
 let latexLanguageRegistered = false;
 
+// Session layout preference for graphic code blocks (column = true, row = false)
+let sessionLayoutPreference: boolean = true;
+
 /**
  * Register Mermaid language with Monaco Editor
  */
@@ -958,6 +961,7 @@ const createLayoutToggle = (
 
     const setColumnLayout = () => {
         isColumnLayout = true;
+        sessionLayoutPreference = true; // Save preference for session
         codeBlockElement.classList.add("vditor-code-block--column");
         button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M4 4h16v6H4V4zm0 8h16v8H4v-8z"/></svg>';
         button.title = "Switch to Row Layout";
@@ -971,6 +975,7 @@ const createLayoutToggle = (
 
     const setRowLayout = () => {
         isColumnLayout = false;
+        sessionLayoutPreference = false; // Save preference for session
         codeBlockElement.classList.remove("vditor-code-block--column");
         button.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M10 4H4v16h6V4zm2 0v16h8V4h-8z"/></svg>';
         button.title = "Switch to Column Layout";
@@ -1134,8 +1139,8 @@ export const initMonacoForCodeBlock = async (
             toolbar.setAttribute("contenteditable", "false");
         }
 
-        // Add layout toggle button to toolbar
-        const layoutToggle = createLayoutToggle(codeBlockElement, monacoWrapper, previewElement);
+        // Add layout toggle button to toolbar (use saved session preference)
+        const layoutToggle = createLayoutToggle(codeBlockElement, monacoWrapper, previewElement, sessionLayoutPreference);
         toolbar.appendChild(layoutToggle);
 
         monacoWrapper.insertBefore(toolbar, monacoWrapper.firstChild);
