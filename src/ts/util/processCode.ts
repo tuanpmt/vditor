@@ -65,7 +65,18 @@ export const processCodeRender = (previewPanel: HTMLElement, vditor: IVditor) =>
         previewPanel.setAttribute("data-render", "1");
         return;
     }
-    const language = previewPanel.firstElementChild.className.replace("language-", "");
+    // Handle math-block specially
+    if (previewPanel.parentElement.getAttribute("data-type") === "math-block") {
+        renderMathLivePreview(previewPanel, vditor);
+        previewPanel.setAttribute("data-render", "1");
+        return;
+    }
+    const firstElement = previewPanel.firstElementChild;
+    if (!firstElement) {
+        previewPanel.setAttribute("data-render", "1");
+        return;
+    }
+    const language = firstElement.className.replace("language-", "");
     if (language === "abc") {
         abcRender(previewPanel, vditor.options.cdn);
     } else if (language === "mermaid") {

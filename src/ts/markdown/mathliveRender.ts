@@ -44,13 +44,25 @@ export const renderMathLivePreview = (
     // Get CDN path
     const cdn = vditor.options.cdn !== undefined ? vditor.options.cdn : Constants.CDN;
 
-    // Get the code element to extract LaTeX
+    // Get the LaTeX content - first try from preview's code element, then from parent's pre > code
+    let mathContent = "";
     const codeElement = previewElement.querySelector("code") as HTMLElement;
-    if (!codeElement) {
-        return;
+    if (codeElement) {
+        mathContent = codeElement.textContent || "";
+    } else {
+        // For math-block, get content from sibling pre > code
+        const parentBlock = previewElement.parentElement;
+        if (parentBlock) {
+            const preCode = parentBlock.querySelector("pre > code") as HTMLElement;
+            if (preCode) {
+                mathContent = preCode.textContent || "";
+            }
+        }
     }
 
-    const mathContent = codeElement.textContent || "";
+    if (!mathContent) {
+        return;
+    }
 
     // Load MathLive and render
     loadMathLive(cdn).then(() => {
@@ -124,6 +136,18 @@ export const initMathLiveForMathBlock = async (
     editorWrapper.addEventListener("keydown", (e) => e.stopPropagation());
     editorWrapper.addEventListener("keyup", (e) => e.stopPropagation());
     editorWrapper.addEventListener("keypress", (e) => e.stopPropagation());
+
+    // Handle click outside to destroy editor
+    const handleClickOutside = (e: MouseEvent) => {
+        if (!editorWrapper.contains(e.target as Node)) {
+            document.removeEventListener("mousedown", handleClickOutside);
+            destroyMathLiveForMathBlock(mathBlockElement, vditor);
+        }
+    };
+    // Delay adding listener to avoid immediate trigger
+    setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
 
     // Create Monaco editor wrapper (TOP)
     const monacoWrapper = document.createElement("div");
@@ -229,4 +253,7 @@ export const destroyMathLiveForMathBlock = (
 
     // Remove editor wrapper
     editorWrapper.remove();
+
+    // Remove expand class
+    mathBlockElement.classList.remove("vditor-ir__node--expand");
 };
