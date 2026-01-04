@@ -20,6 +20,34 @@
   word-break: break-word;
   word-wrap: break-word;
 
+  // Monaco SV mode styles
+  &--monaco {
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--textarea-background-color);
+
+    .monaco-editor {
+      .monaco-scrollable-element {
+        padding: 0;
+      }
+
+      // Override Monaco's default font
+      .view-lines {
+        font-family: var(--font-family-content);
+      }
+
+      // Better line wrapping
+      .view-line {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    }
+  }
+
+  &--focus {
+    background-color: var(--textarea-background-color);
+  }
+
   &[contenteditable="false"] {
     opacity: 0.3;
     cursor: not-allowed;

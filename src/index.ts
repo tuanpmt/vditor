@@ -137,6 +137,10 @@ class Vditor extends VditorMethod {
         if (this.vditor.monaco) {
             this.vditor.monaco.updateTheme(theme);
         }
+        // Update Monaco SV editor theme
+        if (this.vditor.sv?.updateTheme) {
+            this.vditor.sv.updateTheme();
+        }
     }
 
     /** 设置字体 */
@@ -336,12 +340,19 @@ class Vditor extends VditorMethod {
     /** 设置编辑器内容 */
     public setValue(markdown: string, clearStack = false) {
         if (this.vditor.currentMode === "sv") {
-            this.vditor.sv.element.innerHTML = `<div data-block='0'>${this.vditor.lute.SpinVditorSVDOM(markdown)}</div>`;
-            processSVAfterRender(this.vditor, {
-                enableAddUndoStack: true,
-                enableHint: false,
-                enableInput: false,
-            });
+            // Use Monaco SV setValue if available
+            if (this.vditor.sv?.isMonacoMode?.() && this.vditor.sv?.setValue) {
+                this.vditor.sv.setValue(markdown);
+                // Render preview
+                this.vditor.preview?.render(this.vditor);
+            } else {
+                this.vditor.sv.element.innerHTML = `<div data-block='0'>${this.vditor.lute.SpinVditorSVDOM(markdown)}</div>`;
+                processSVAfterRender(this.vditor, {
+                    enableAddUndoStack: true,
+                    enableHint: false,
+                    enableInput: false,
+                });
+            }
         } else if (this.vditor.currentMode === "wysiwyg") {
             renderDomByMd(this.vditor, markdown, {
                 enableAddUndoStack: true,
@@ -392,6 +403,10 @@ class Vditor extends VditorMethod {
         // Destroy Monaco instances first
         if (this.vditor.monaco) {
             this.vditor.monaco.destroy();
+        }
+        // Destroy Monaco SV editor
+        if (this.vditor.sv?.dispose) {
+            this.vditor.sv.dispose();
         }
 
         this.vditor.element.innerHTML = this.vditor.originalInnerHTML;
