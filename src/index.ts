@@ -3,6 +3,7 @@ import VditorMethod from "./method";
 import {Constants, VDITOR_VERSION} from "./ts/constants";
 import {DevTools} from "./ts/devtools/index";
 import {Hint} from "./ts/hint/index";
+import "./ts/i18n/index";
 import {IR} from "./ts/ir/index";
 import {input as irInput} from "./ts/ir/input";
 import {processAfterRender} from "./ts/ir/process";
@@ -78,30 +79,11 @@ class Vditor extends VditorMethod {
         const getOptions = new Options(options);
         const mergedOptions = getOptions.merge();
 
-        // 支持自定义国际化
-        if (!mergedOptions.i18n) {
-            if (!["de_DE", "en_US", "es_ES", "fr_FR", "ja_JP", "ko_KR", "pt_BR", "ru_RU", "sv_SE", "vi_VN", "zh_CN", "zh_TW"].includes(mergedOptions.lang)) {
-                throw new Error(
-                    "options.lang error, see https://ld246.com/article/1549638745630#options",
-                );
-            } else {
-                const i18nScriptPrefix = "vditorI18nScript";
-                const i18nScriptID = i18nScriptPrefix + mergedOptions.lang;
-                document.querySelectorAll(`head script[id^="${i18nScriptPrefix}"]`).forEach((el) => {
-                    if (el.id !== i18nScriptID) {
-                        document.head.removeChild(el);
-                    }
-                });
-                addScript(`${mergedOptions.cdn}/dist/js/i18n/${mergedOptions.lang}.js`, i18nScriptID).then(() => {
-                    this.init(id as HTMLElement, mergedOptions);
-                }).catch(error => {
-                    this.showErrorTip(`GET ${mergedOptions.cdn}/dist/js/i18n/${mergedOptions.lang}.js net::ERR_ABORTED 404 (Not Found)`);
-                });
-            }
-        } else {
+        // Support custom i18n override
+        if (mergedOptions.i18n) {
             window.VditorI18n = mergedOptions.i18n;
-            this.init(id, mergedOptions);
         }
+        this.init(id, mergedOptions);
     }
 
     private showErrorTip(error: string) {

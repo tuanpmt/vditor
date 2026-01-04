@@ -1,4 +1,5 @@
 import {Constants} from "../constants";
+import "../i18n/index";
 import {setContentTheme} from "../ui/setContentTheme";
 import {addScript} from "../util/addScript";
 import {hasClosestByClassName, hasClosestByMatchTag} from "../util/hasClosest";
@@ -101,22 +102,8 @@ export const previewRender = async (previewElement: HTMLDivElement, markdown: st
     previewElement.innerHTML = html;
     previewElement.classList.add("vditor-reset");
 
-    if (!mergedOptions.i18n) {
-        if (!["de_DE", "en_US", "es_ES", "fr_FR", "ja_JP", "ko_KR", "pt_BR", "ru_RU", "sv_SE", "vi_VN", "zh_CN", "zh_TW"].includes(mergedOptions.lang)) {
-            throw new Error(
-                "options.lang error, see https://ld246.com/article/1549638745630#options",
-            );
-        } else {
-            const i18nScriptPrefix = "vditorI18nScript";
-            const i18nScriptID = i18nScriptPrefix + mergedOptions.lang;
-            document.querySelectorAll(`head script[id^="${i18nScriptPrefix}"]`).forEach((el) => {
-                if (el.id !== i18nScriptID) {
-                    document.head.removeChild(el);
-                }
-            });
-            await addScript(`${mergedOptions.cdn}/dist/js/i18n/${mergedOptions.lang}.js`, i18nScriptID);
-        }
-    } else {
+    // Support custom i18n override
+    if (mergedOptions.i18n) {
         window.VditorI18n = mergedOptions.i18n;
     }
 
