@@ -1067,8 +1067,6 @@ export const initMonacoForCodeBlock = async (
     if (!monacoWrapper) {
         monacoWrapper = document.createElement("div");
         monacoWrapper.className = "vditor-monaco-wrapper";
-        // Add class to show fence markers
-        codeBlockElement.classList.add("vditor-ir__node--monaco");
         // Set contenteditable to false to prevent vditor from interfering
         monacoWrapper.setAttribute("contenteditable", "false");
         // Stop events from bubbling to vditor
@@ -1083,6 +1081,8 @@ export const initMonacoForCodeBlock = async (
             preElement.parentElement?.insertBefore(monacoWrapper, preElement.nextSibling);
         }
     }
+    // Add class to show fence markers (always add, even if wrapper exists)
+    codeBlockElement.classList.add("vditor-ir__node--monaco");
 
     // Check if graphic language for live preview
     const isGraphic = isGraphicLanguage(language);
@@ -1196,6 +1196,9 @@ export const destroyMonacoForCodeBlock = (
         const previewElement = codeBlockElement.querySelector(".vditor-ir__preview, .vditor-wysiwyg__preview") as HTMLElement;
         if (previewElement) {
             previewElement.style.display = "";
+            // Reset scroll position when Monaco is destroyed
+            previewElement.scrollLeft = 0;
+            previewElement.scrollTop = 0;
             // Copy content to preview and re-render
             if (codeElement && preElement) {
                 previewElement.innerHTML = preElement.innerHTML;
