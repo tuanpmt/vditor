@@ -103,6 +103,7 @@ export class Toolbar {
             case "code":
             case "inline-code":
             case "link":
+            case "image":
             case "table":
                 menuItemObj = new MenuItem(vditor, menuItem);
                 break;
