@@ -409,6 +409,20 @@ export class MonacoManager {
 // Languages that need live preview (graphics/diagrams)
 const GRAPHIC_LANGUAGES = ["mermaid", "flowchart", "mindmap", "echarts", "plantuml", "graphviz", "abc", "markmap", "math", "wavedrom"];
 
+// Map code block languages to Monaco language IDs
+const LANGUAGE_MAP: Record<string, string> = {
+    wavedrom: "json",
+    echarts: "json",
+};
+
+/**
+ * Get Monaco language ID for a code block language
+ */
+const getMonacoLanguage = (language: string): string => {
+    const lang = language?.toLowerCase() || "";
+    return LANGUAGE_MAP[lang] || lang;
+};
+
 // Mermaid config options
 const MERMAID_LAYOUTS = [
     {value: "", label: "Default"},
@@ -684,8 +698,9 @@ export const initMonacoForCodeBlock = async (
         }
     }, 300) : null;
 
-    // Create Monaco editor
-    const editor = await vditor.monaco.create(monacoWrapper, language, code, (content: string) => {
+    // Create Monaco editor (map language to Monaco language ID)
+    const monacoLanguage = getMonacoLanguage(language);
+    const editor = await vditor.monaco.create(monacoWrapper, monacoLanguage, code, (content: string) => {
         // Sync content back to code element
         codeElement.textContent = content;
         if (onChange) {
