@@ -166,13 +166,16 @@ class IR {
                     setSelectionFocus(range);
                 }
             }
-            // 打开链接
+            // 点击链接时展开编辑模式，而不是打开链接
             const aElement = hasClosestByAttribute(event.target, "data-type", "a");
             if (aElement && (!aElement.classList.contains("vditor-ir__node--expand"))) {
-                if (vditor.options.link.click) {
-                    vditor.options.link.click(aElement.querySelector(":scope > .vditor-ir__marker--link"));
-                } else if (vditor.options.link.isOpen) {
-                    window.open(aElement.querySelector(":scope > .vditor-ir__marker--link").textContent);
+                // 将光标放在链接文本中，触发展开编辑
+                const linkTextElement = aElement.querySelector(".vditor-ir__link");
+                if (linkTextElement) {
+                    range.selectNodeContents(linkTextElement);
+                    range.collapse(false);
+                    setSelectionFocus(range);
+                    expandMarker(range, vditor);
                 }
                 return;
             }
