@@ -6,7 +6,7 @@ import {Hint} from "./ts/hint/index";
 import {IR} from "./ts/ir/index";
 import {input as irInput} from "./ts/ir/input";
 import {processAfterRender} from "./ts/ir/process";
-import {getHTML, getRenderedHTML, getRenderedHTMLWithFonts, generateEmbeddedFontCSS} from "./ts/markdown/getHTML";
+import {getHTML, getRenderedHTML, getRenderedHTMLWithFonts, generateEmbeddedFontCSS, getFullyRenderedHTML} from "./ts/markdown/getHTML";
 import {getMarkdown} from "./ts/markdown/getMarkdown";
 import {setLute} from "./ts/markdown/setLute";
 import {MonacoManager} from "./ts/markdown/monacoRender";
@@ -320,14 +320,16 @@ class Vditor extends VditorMethod {
     /**
      * Get rendered HTML from preview panel (includes rendered mermaid, math, wavedrom, etc.)
      * Useful for PDF export where diagrams need to be already rendered as SVG
+     * @param format - if true, returns formatted HTML with indentation (default: false)
      */
-    public getRenderedHTML() {
-        return getRenderedHTML(this.vditor);
+    public getRenderedHTML(format = false) {
+        return getRenderedHTML(this.vditor, format);
     }
 
     /**
-     * Get rendered HTML with embedded fonts (async)
+     * Get fully rendered HTML with embedded fonts (async)
      * Returns complete HTML with @font-face rules and base64 encoded fonts
+     * Uses getFullyRenderedHTML for proper rendering of diagrams and code
      * Useful for PDF export where fonts need to be self-contained
      */
     public async getRenderedHTMLWithFonts(): Promise<string> {
@@ -340,6 +342,15 @@ class Vditor extends VditorMethod {
      */
     public async getEmbeddedFontCSS(): Promise<string> {
         return generateEmbeddedFontCSS(this.vditor.options.cdn);
+    }
+
+    /**
+     * Get fully rendered HTML with all renderers applied (async)
+     * This properly renders mermaid, wavedrom, code highlighting, math, etc.
+     * Best for PDF export - includes all visual rendering
+     */
+    public async getFullyRenderedHTML(): Promise<string> {
+        return getFullyRenderedHTML(this.vditor);
     }
 
     /** 消息提示。time 为 0 将一直显示 */

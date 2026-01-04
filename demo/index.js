@@ -141,32 +141,43 @@ window.setLang = (language) => {
     initVditor(language)
 }
 
-// Test getRenderedHTML - opens in new window
-window.testRenderedHTML = () => {
-    const html = window.vditor.getRenderedHTML()
-    const newWindow = window.open("", "_blank")
-    newWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Rendered HTML Test</title>
-            <link rel="stylesheet" href="/dist/index.css">
-            <style>
-                body { padding: 20px; font-family: system-ui, sans-serif; }
-                .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
-                .content { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
-            </style>
-        </head>
-        <body>
-            <div class="info">
-                <strong>getRenderedHTML() Output</strong><br>
-                Size: ${html.length} characters
-            </div>
-            <div class="content vditor-reset">${html}</div>
-        </body>
-        </html>
-    `)
-    newWindow.document.close()
+// Test getFullyRenderedHTML - opens in new window (async, with all renderers)
+window.testRenderedHTML = async () => {
+    const btn = event.target
+    btn.disabled = true
+    btn.textContent = "Rendering..."
+
+    try {
+        const html = await window.vditor.getFullyRenderedHTML()
+        const newWindow = window.open("", "_blank")
+        newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Fully Rendered HTML Test</title>
+                <link rel="stylesheet" href="/dist/index.css">
+                <style>
+                    body { padding: 20px; font-family: system-ui, sans-serif; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+                    .content { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                </style>
+            </head>
+            <body>
+                <div class="info">
+                    <strong>getFullyRenderedHTML() Output</strong><br>
+                    Size: ${html.length} characters (includes rendered diagrams, code highlighting)
+                </div>
+                <div class="content vditor-reset">${html}</div>
+            </body>
+            </html>
+        `)
+        newWindow.document.close()
+    } catch (e) {
+        alert("Error: " + e.message)
+    } finally {
+        btn.disabled = false
+        btn.textContent = "Test HTML"
+    }
 }
 
 // Test getRenderedHTMLWithFonts - opens in new window (async)

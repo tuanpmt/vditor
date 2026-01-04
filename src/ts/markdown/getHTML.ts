@@ -1,4 +1,17 @@
 import {getMarkdown} from "./getMarkdown";
+import {highlightRender} from "./highlightRender";
+import {codeRender} from "./codeRender";
+import {mermaidRender} from "./mermaidRender";
+import {wavedromRender} from "./wavedromRender";
+import {mathRender} from "./mathRender";
+import {chartRender} from "./chartRender";
+import {abcRender} from "./abcRender";
+import {graphvizRender} from "./graphvizRender";
+import {flowchartRender} from "./flowchartRender";
+import {mindmapRender} from "./mindmapRender";
+import {plantumlRender} from "./plantumlRender";
+import {markmapRender} from "./markmapRender";
+import {SMILESRender} from "./SMILESRender";
 
 // Font definitions for embedding
 const FONT_DEFINITIONS = [
@@ -90,6 +103,55 @@ export const getHTML = (vditor: IVditor) => {
 };
 
 /**
+ * Apply all renderers to an element (similar to preview.render)
+ * This applies syntax highlighting, mermaid, wavedrom, math, etc.
+ */
+const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<void> => {
+    const cdn = vditor.options.cdn;
+    const theme = vditor.options.theme;
+    const hljs = vditor.options.preview?.hljs || {};
+    const math = vditor.options.preview?.math || {};
+
+    // Apply renderers (these are async - they load scripts dynamically)
+    highlightRender(hljs, element, cdn);
+    codeRender(element, hljs);
+    mathRender(element, {cdn, math});
+    mermaidRender(element, cdn, theme);
+    wavedromRender(element, cdn, theme);
+    chartRender(element, cdn, theme);
+    abcRender(element, cdn);
+    graphvizRender(element, cdn);
+    flowchartRender(element, cdn);
+    mindmapRender(element, cdn, theme);
+    plantumlRender(element, cdn);
+    markmapRender(element, cdn);
+    SMILESRender(element, cdn, theme);
+
+    // Wait for async renderers to complete (they load external scripts)
+    // Poll until code blocks are highlighted or timeout
+    const maxWait = 3000;
+    const startTime = Date.now();
+
+    await new Promise<void>((resolve) => {
+        const checkRendered = () => {
+            const codeBlocks = element.querySelectorAll("pre > code");
+            const allHighlighted = Array.from(codeBlocks).every(
+                (block) => block.classList.contains("hljs") ||
+                           block.classList.contains("language-mermaid") ||
+                           block.classList.contains("language-math")
+            );
+
+            if (allHighlighted || Date.now() - startTime > maxWait) {
+                resolve();
+            } else {
+                setTimeout(checkRendered, 100);
+            }
+        };
+        checkRendered();
+    });
+};
+
+/**
  * Extract rendered HTML from IR mode with SVGs embedded
  * Converts IR DOM structure to clean HTML with rendered diagrams
  */
@@ -98,92 +160,121 @@ const getRenderedHTMLFromIR = (vditor: IVditor): string => {
         return "";
     }
 
-    // Clone IR element to avoid modifying original
-    const clone = vditor.ir.element.cloneNode(true) as HTMLElement;
+    // Get base HTML from lute (proper conversion with headings, paragraphs, etc.)
+    return vditor.lute.VditorIRDOM2HTML(vditor.ir.element.innerHTML);
+};
 
-    // Process code blocks: replace marker content with preview content
-    clone.querySelectorAll(".vditor-ir__node[data-type='code-block'], .vditor-ir__node[data-type='math-block']").forEach((block) => {
-        const preview = block.querySelector(".vditor-ir__preview") as HTMLElement;
-        const markerPre = block.querySelector(".vditor-ir__marker--pre") as HTMLElement;
+/**
+ * Get rendered HTML with all renderers applied (async)
+ * This properly renders mermaid, wavedrom, code highlighting, math, etc.
+ */
+export const getFullyRenderedHTML = async (vditor: IVditor): Promise<string> => {
+    // Get base HTML
+    let html = "";
+    if (vditor.currentMode === "ir") {
+        html = vditor.lute.VditorIRDOM2HTML(vditor.ir.element.innerHTML);
+    } else if (vditor.currentMode === "wysiwyg") {
+        html = vditor.lute.VditorDOM2HTML(vditor.wysiwyg.element.innerHTML);
+    } else {
+        html = vditor.lute.Md2HTML(getMarkdown(vditor));
+    }
 
-        if (preview && preview.innerHTML.trim()) {
-            // Get language from code element
-            const codeEl = markerPre?.querySelector("code");
-            const language = codeEl?.className?.replace("language-", "") || "";
+    // Create hidden container for rendering
+    const container = document.createElement("div");
+    container.className = "vditor-reset";
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "-9999px";
+    container.innerHTML = html;
+    document.body.appendChild(container);
 
-            // For graphic languages (mermaid, wavedrom, etc.), use preview content directly
-            const graphicLanguages = ["mermaid", "wavedrom", "graphviz", "plantuml", "flowchart", "mindmap", "echarts", "abc", "markmap", "smiles"];
-            if (graphicLanguages.includes(language)) {
-                // Create a div with just the rendered SVG
-                const wrapper = document.createElement("div");
-                wrapper.className = `vditor-${language}`;
-                wrapper.innerHTML = preview.innerHTML;
-                block.parentNode?.replaceChild(wrapper, block);
-            } else if (language === "math" || block.getAttribute("data-type") === "math-block") {
-                // For math, use preview content
-                const wrapper = document.createElement("div");
-                wrapper.className = "vditor-math";
-                wrapper.innerHTML = preview.innerHTML;
-                block.parentNode?.replaceChild(wrapper, block);
+    try {
+        // Apply all renderers
+        await applyRenderers(container, vditor);
+        return container.innerHTML;
+    } finally {
+        // Clean up
+        document.body.removeChild(container);
+    }
+};
+
+/**
+ * Simple HTML formatter - adds line breaks and indentation
+ */
+const formatHTML = (html: string): string => {
+    let formatted = "";
+    let indent = 0;
+    const tab = "  ";
+
+    // Split by tags
+    const tokens = html.split(/(<\/?[^>]+>)/g).filter(t => t.trim());
+
+    for (const token of tokens) {
+        if (token.startsWith("</")) {
+            // Closing tag - decrease indent first
+            indent = Math.max(0, indent - 1);
+            formatted += tab.repeat(indent) + token + "\n";
+        } else if (token.startsWith("<") && !token.startsWith("<!") && !token.endsWith("/>")) {
+            // Opening tag
+            formatted += tab.repeat(indent) + token + "\n";
+            // Don't indent for void elements
+            if (!/^<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)/i.test(token)) {
+                indent++;
             }
-            // For regular code blocks, let lute handle the conversion
+        } else if (token.startsWith("<")) {
+            // Self-closing or void tag
+            formatted += tab.repeat(indent) + token + "\n";
+        } else {
+            // Text content
+            const text = token.trim();
+            if (text) {
+                formatted += tab.repeat(indent) + text + "\n";
+            }
         }
-    });
+    }
 
-    // Remove all IR-specific marker elements
-    clone.querySelectorAll(".vditor-ir__marker, .vditor-ir__marker--pre, .vditor-ir__marker--link, .vditor-ir__marker--hide").forEach((el) => {
-        el.remove();
-    });
-
-    // Remove Monaco editor wrappers
-    clone.querySelectorAll(".vditor-monaco-wrapper").forEach((el) => {
-        el.remove();
-    });
-
-    // Remove popover
-    clone.querySelectorAll(".vditor-panel").forEach((el) => {
-        el.remove();
-    });
-
-    // Convert remaining IR DOM to HTML
-    return vditor.lute.VditorIRDOM2HTML(clone.innerHTML);
+    return formatted.trim();
 };
 
 /**
  * Get rendered HTML from preview panel (includes rendered mermaid, math, etc.)
  * This is useful for PDF export where diagrams need to be already rendered as SVG
  * SVGs are embedded inline in the HTML output
+ * @param format - if true, returns formatted HTML with indentation
  */
-export const getRenderedHTML = (vditor: IVditor): string => {
+export const getRenderedHTML = (vditor: IVditor, format = false): string => {
+    let html = "";
+
     // For IR mode, extract from IR element with rendered previews
     if (vditor.currentMode === "ir") {
-        return getRenderedHTMLFromIR(vditor);
-    }
-
-    // Try to get from preview panel (has rendered diagrams)
-    if (vditor.preview?.previewElement?.innerHTML) {
-        return vditor.preview.previewElement.innerHTML;
-    }
-
-    // For SV mode with preview panel visible
-    if (vditor.currentMode === "sv" && vditor.sv?.element) {
+        html = getRenderedHTMLFromIR(vditor);
+    } else if (vditor.preview?.previewElement?.innerHTML) {
+        // Try to get from preview panel (has rendered diagrams)
+        html = vditor.preview.previewElement.innerHTML;
+    } else if (vditor.currentMode === "sv" && vditor.sv?.element) {
+        // For SV mode with preview panel visible
         const previewEl = vditor.sv.element.querySelector(".vditor-reset");
         if (previewEl) {
-            return previewEl.innerHTML;
+            html = previewEl.innerHTML;
         }
     }
 
     // Fallback to regular getHTML (raw, no rendered diagrams)
-    return getHTML(vditor) || "";
+    if (!html) {
+        html = getHTML(vditor) || "";
+    }
+
+    return format ? formatHTML(html) : html;
 };
 
 /**
- * Get rendered HTML with embedded fonts (async)
+ * Get fully rendered HTML with embedded fonts (async)
  * Returns complete HTML with @font-face rules and base64 encoded fonts
+ * Uses getFullyRenderedHTML for proper rendering of diagrams and code
  * Useful for PDF export where fonts need to be self-contained
  */
 export const getRenderedHTMLWithFonts = async (vditor: IVditor): Promise<string> => {
-    const html = getRenderedHTML(vditor);
+    const html = await getFullyRenderedHTML(vditor);
     const fontCSS = await generateEmbeddedFontCSS(vditor.options.cdn);
 
     // Return HTML with embedded font styles
