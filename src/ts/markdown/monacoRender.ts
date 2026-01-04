@@ -1067,6 +1067,8 @@ export const initMonacoForCodeBlock = async (
     if (!monacoWrapper) {
         monacoWrapper = document.createElement("div");
         monacoWrapper.className = "vditor-monaco-wrapper";
+        // Add class to show fence markers
+        codeBlockElement.classList.add("vditor-ir__node--monaco");
         // Set contenteditable to false to prevent vditor from interfering
         monacoWrapper.setAttribute("contenteditable", "false");
         // Stop events from bubbling to vditor
@@ -1175,6 +1177,7 @@ export const destroyMonacoForCodeBlock = (
     // Remove expand class to remove selected background
     codeBlockElement.classList.remove("vditor-ir__node--expand");
     codeBlockElement.classList.remove("vditor-wysiwyg__node--expand");
+    codeBlockElement.classList.remove("vditor-ir__node--monaco");
 
     const monacoId = monacoWrapper.getAttribute("data-monaco-id");
     if (monacoId) {
