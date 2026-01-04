@@ -255,14 +255,26 @@ export const destroyMathLiveForMathBlock = (
     }
 
     // Get final content from Monaco or MathLive
-    const monacoWrapper = editorWrapper.querySelector(".vditor-mathlive-monaco-wrapper") as any;
+    const monacoWrapper = editorWrapper.querySelector(".vditor-mathlive-monaco-wrapper") as HTMLElement;
     const codeElement = mathBlockElement.querySelector("pre > code") as HTMLElement;
 
     let finalContent = "";
-    if (monacoWrapper?.__monacoEditor) {
-        finalContent = monacoWrapper.__monacoEditor.getValue();
-        monacoWrapper.__monacoEditor.dispose();
-    } else {
+    if (monacoWrapper) {
+        const monacoId = monacoWrapper.getAttribute("data-monaco-id");
+        if (monacoId && vditor.monaco) {
+            // Get content before destroying
+            finalContent = vditor.monaco.getContent(monacoId) || "";
+            // Use Monaco manager to properly destroy
+            vditor.monaco.destroy(monacoId);
+        } else if ((monacoWrapper as any).__monacoEditor) {
+            // Fallback if no manager
+            finalContent = (monacoWrapper as any).__monacoEditor.getValue();
+            (monacoWrapper as any).__monacoEditor.dispose();
+        }
+    }
+
+    // If no Monaco content, try MathLive
+    if (!finalContent) {
         const mathfield = editorWrapper.querySelector(".vditor-mathlive-field") as any;
         if (mathfield) {
             finalContent = mathfield.value;
