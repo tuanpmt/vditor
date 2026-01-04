@@ -4,174 +4,315 @@ import {Constants} from "../constants";
 
 declare const MathfieldElement: any;
 
+// ============================================================================
+// Simple LaTeX Math Prettier
+// Inspired by unified-latex-prettier but simplified for math expressions
+// ============================================================================
+
+interface Token {
+    type: "command" | "text" | "open" | "close" | "operator" | "subscript" | "superscript" | "whitespace" | "newline";
+    value: string;
+    depth?: number;
+}
+
 /**
- * Clean up LaTeX string - remove extra spaces but preserve structure
+ * Tokenize LaTeX math expression
  */
-const cleanLaTeX = (latex: string): string => {
-    if (!latex) return latex;
+const tokenize = (latex: string): Token[] => {
+    const tokens: Token[] = [];
+    let i = 0;
 
-    let result = latex;
+    while (i < latex.length) {
+        const char = latex[i];
 
-    // Remove trailing spaces inside braces: {content } → {content}
-    result = result.replace(/\s+\}/g, "}");
+        // Command: \commandname
+        if (char === "\\") {
+            let cmd = "\\";
+            i++;
+            // Check for special single char commands
+            if (i < latex.length && /[\\{}\[\]$%&_#]/.test(latex[i])) {
+                cmd += latex[i];
+                i++;
+            } else {
+                // Read command name
+                while (i < latex.length && /[a-zA-Z]/.test(latex[i])) {
+                    cmd += latex[i];
+                    i++;
+                }
+            }
+            tokens.push({type: "command", value: cmd});
+            continue;
+        }
 
-    // Remove leading spaces inside braces: { content} → {content}
-    result = result.replace(/\{\s+/g, "{");
+        // Open brace
+        if (char === "{") {
+            tokens.push({type: "open", value: "{"});
+            i++;
+            continue;
+        }
 
-    // Remove trailing spaces inside parentheses: (content ) → (content)
-    result = result.replace(/\s+\)/g, ")");
+        // Close brace
+        if (char === "}") {
+            tokens.push({type: "close", value: "}"});
+            i++;
+            continue;
+        }
 
-    // Remove leading spaces inside parentheses: ( content) → (content)
-    result = result.replace(/\(\s+/g, "(");
+        // Subscript/Superscript
+        if (char === "^") {
+            tokens.push({type: "superscript", value: "^"});
+            i++;
+            continue;
+        }
+        if (char === "_") {
+            tokens.push({type: "subscript", value: "_"});
+            i++;
+            continue;
+        }
 
-    // Remove spaces before ^ and _
-    result = result.replace(/\s+\^/g, "^");
-    result = result.replace(/\s+_/g, "_");
+        // Binary operators (for line breaking)
+        if (char === "=" || char === "+" || char === "-") {
+            tokens.push({type: "operator", value: char});
+            i++;
+            continue;
+        }
 
-    // Remove spaces after ^ and _
-    result = result.replace(/\^\s+/g, "^");
-    result = result.replace(/_\s+/g, "_");
+        // Whitespace
+        if (char === " " || char === "\t") {
+            let ws = "";
+            while (i < latex.length && (latex[i] === " " || latex[i] === "\t")) {
+                ws += latex[i];
+                i++;
+            }
+            tokens.push({type: "whitespace", value: " "});
+            continue;
+        }
 
-    // Remove spaces after backslash commands before {
-    result = result.replace(/(\\[a-zA-Z]+)\s+\{/g, "$1{");
+        // Newline
+        if (char === "\n") {
+            tokens.push({type: "newline", value: "\n"});
+            i++;
+            continue;
+        }
 
-    // Normalize whitespace (but don't collapse line breaks yet)
-    result = result.replace(/[ \t]+/g, " ");
+        // Other text (numbers, letters, etc.)
+        let text = "";
+        while (i < latex.length && !/[\\{}\^_=+\-\s\n]/.test(latex[i])) {
+            text += latex[i];
+            i++;
+        }
+        if (text) {
+            tokens.push({type: "text", value: text});
+        }
+    }
 
-    return result;
+    return tokens;
 };
 
 /**
- * Simple LaTeX math pretty-printer
- * Formats common structures with line breaks and indentation
+ * Commands that create block structures (may need line breaks)
  */
-const prettyPrintLaTeX = (latex: string): string => {
-    if (!latex) return latex;
+const BLOCK_COMMANDS = new Set([
+    "\\frac", "\\dfrac", "\\tfrac", "\\cfrac",
+    "\\sum", "\\prod", "\\int", "\\oint",
+    "\\lim", "\\max", "\\min",
+]);
 
-    // First clean up the LaTeX
-    let result = cleanLaTeX(latex);
+/**
+ * Environment commands
+ */
+const ENV_COMMANDS = new Set(["\\begin", "\\end"]);
 
-    // Remove existing line breaks to start fresh
-    result = result.replace(/\n\s*/g, " ").trim();
-
-    // If it's a short expression (< 60 chars), keep it single line
-    if (result.length < 60) {
-        return result;
+/**
+ * Format LaTeX math expression
+ */
+const formatLaTeXMath = (latex: string, printWidth: number = 80): string => {
+    if (!latex || latex.trim().length === 0) {
+        return latex;
     }
 
-    // Track brace depth for indentation
-    const indent = (depth: number): string => "  ".repeat(depth);
+    // First, clean up the input
+    let cleaned = latex
+        .replace(/\s+\}/g, "}")
+        .replace(/\{\s+/g, "{")
+        .replace(/\s+\^/g, "^")
+        .replace(/\s+_/g, "_")
+        .replace(/\^\s+/g, "^")
+        .replace(/_\s+/g, "_")
+        .replace(/(\\[a-zA-Z]+)\s+\{/g, "$1{")
+        .replace(/  +/g, " ")
+        .replace(/\n\s*/g, " ")
+        .trim();
 
-    // Parse and format
+    // If short enough, return as single line
+    if (cleaned.length <= printWidth) {
+        return cleaned;
+    }
+
+    // Tokenize
+    const tokens = tokenize(cleaned);
+
+    // Format with proper line breaks
     let output = "";
     let depth = 0;
-    let i = 0;
+    let lineLength = 0;
+    let lastCommandWasBlock = false;
+    let fracDepth = 0; // Track nested frac depth
 
-    // Commands that should have line break after their content
-    const breakAfterCommands = ["\\frac", "\\dfrac", "\\tfrac", "\\cfrac"];
+    const indent = (d: number) => "  ".repeat(Math.max(0, d));
+    const addNewline = (extraIndent: number = 0) => {
+        output += "\n" + indent(depth + extraIndent);
+        lineLength = (depth + extraIndent) * 2;
+    };
 
-    while (i < result.length) {
-        // Check for LaTeX commands
-        if (result[i] === "\\") {
-            // Find command name
-            let cmdEnd = i + 1;
-            while (cmdEnd < result.length && /[a-zA-Z]/.test(result[cmdEnd])) {
-                cmdEnd++;
-            }
-            const cmd = result.slice(i, cmdEnd);
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        const prevToken = i > 0 ? tokens[i - 1] : null;
+        const nextToken = i < tokens.length - 1 ? tokens[i + 1] : null;
 
-            // Check if this is a frac command with nested content
-            if (breakAfterCommands.includes(cmd)) {
-                // Check if the frac contains other fracs (nested)
-                const afterCmd = result.slice(cmdEnd);
-                const hasNestedFrac = /^{[^}]*\\(?:d?t?c?frac)/.test(afterCmd);
-
-                if (hasNestedFrac && depth < 3) {
-                    // Add line break before frac at depth > 0
-                    if (depth > 0 && output.length > 0 && !output.endsWith("\n")) {
-                        output += "\n" + indent(depth);
+        switch (token.type) {
+            case "command":
+                // Handle \begin and \end
+                if (token.value === "\\begin") {
+                    if (lineLength > 0 && !output.endsWith("\n")) {
+                        addNewline();
                     }
-                }
-            }
-
-            // Check for \begin and \end
-            if (cmd === "\\begin" || cmd === "\\end") {
-                if (cmd === "\\begin") {
-                    if (output.length > 0 && !output.endsWith("\n")) {
-                        output += "\n" + indent(depth);
-                    }
-                    output += cmd;
+                    output += token.value;
+                    lineLength += token.value.length;
                     depth++;
-                } else {
+                } else if (token.value === "\\end") {
                     depth = Math.max(0, depth - 1);
                     if (!output.endsWith("\n")) {
-                        output += "\n" + indent(depth);
+                        addNewline();
                     }
-                    output += cmd;
+                    output += token.value;
+                    lineLength += token.value.length;
+                } else if (BLOCK_COMMANDS.has(token.value)) {
+                    // Block commands like \frac
+                    const isFrac = token.value.includes("frac");
+                    if (isFrac) {
+                        fracDepth++;
+                    }
+
+                    // Add line break before if we're nested and line is long
+                    if (fracDepth > 1 && lineLength > printWidth * 0.5) {
+                        addNewline();
+                    }
+
+                    output += token.value;
+                    lineLength += token.value.length;
+                    lastCommandWasBlock = true;
+                } else {
+                    output += token.value;
+                    lineLength += token.value.length;
+                    lastCommandWasBlock = false;
                 }
-                i = cmdEnd;
-                continue;
-            }
+                break;
 
-            output += cmd;
-            i = cmdEnd;
-            continue;
-        }
+            case "open":
+                output += "{";
+                lineLength++;
+                depth++;
 
-        // Track brace depth
-        if (result[i] === "{") {
-            output += "{";
-            depth++;
-            i++;
-            continue;
-        }
+                // If inside frac and line is getting long, add newline after {
+                if (lastCommandWasBlock && fracDepth > 0 && lineLength > printWidth * 0.6) {
+                    addNewline();
+                }
+                break;
 
-        if (result[i] === "}") {
-            depth = Math.max(0, depth - 1);
-            output += "}";
-            i++;
+            case "close":
+                depth = Math.max(0, depth - 1);
+                output += "}";
+                lineLength++;
 
-            // Add line break after closing brace of frac denominator at top level
-            if (depth === 0 && i < result.length) {
-                const nextChar = result[i];
-                // If next is an operator or another frac, consider line break
-                if (nextChar === "=" || nextChar === "+" || nextChar === "-") {
+                // Track frac arguments
+                if (fracDepth > 0) {
+                    // Check if this closes a frac argument
+                    const lookBack = output.slice(-20);
+                    if (/\\[dt]?c?frac\{[^{}]*\}$/.test(lookBack)) {
+                        // Just closed numerator, denominator next
+                    } else if (fracDepth > 0) {
+                        // Might be closing denominator
+                        let braceCount = 0;
+                        let foundFrac = false;
+                        for (let j = output.length - 1; j >= 0 && !foundFrac; j--) {
+                            if (output[j] === "}") braceCount++;
+                            else if (output[j] === "{") braceCount--;
+                            if (braceCount === 0 && j > 5) {
+                                const checkStr = output.slice(Math.max(0, j - 6), j);
+                                if (/\\[dt]?c?frac$/.test(checkStr)) {
+                                    foundFrac = true;
+                                    fracDepth--;
+                                }
+                            }
+                        }
+                    }
+                }
+                lastCommandWasBlock = false;
+                break;
+
+            case "operator":
+                // Add line break before operator at depth 0 if line is long
+                if (token.value === "=" && depth <= 1 && lineLength > printWidth * 0.4) {
+                    output += " " + token.value;
+                    addNewline(1);
+                } else if ((token.value === "+" || token.value === "-") && depth <= 1 && lineLength > printWidth * 0.7) {
+                    addNewline();
+                    output += token.value + " ";
+                    lineLength += 2;
+                } else {
+                    // Add spaces around operators at top level
+                    if (depth <= 1 && prevToken?.type !== "whitespace") {
+                        output += " ";
+                        lineLength++;
+                    }
+                    output += token.value;
+                    lineLength += token.value.length;
+                    if (depth <= 1 && nextToken?.type !== "whitespace") {
+                        output += " ";
+                        lineLength++;
+                    }
+                }
+                break;
+
+            case "superscript":
+            case "subscript":
+                output += token.value;
+                lineLength++;
+                break;
+
+            case "whitespace":
+                // Skip whitespace after newline
+                if (!output.endsWith("\n") && !output.endsWith("  ")) {
                     output += " ";
+                    lineLength++;
                 }
-            }
-            continue;
-        }
+                break;
 
-        // Handle = at top level - add line break after
-        if (result[i] === "=" && depth <= 1) {
-            output += "=";
-            // Add line break after = if expression is long enough
-            if (result.length > 80) {
-                output += "\n" + indent(1);
-            } else {
-                output += " ";
-            }
-            i++;
-            // Skip space after =
-            while (i < result.length && result[i] === " ") {
-                i++;
-            }
-            continue;
-        }
+            case "newline":
+                // Preserve intentional newlines
+                if (!output.endsWith("\n")) {
+                    addNewline();
+                }
+                break;
 
-        output += result[i];
-        i++;
+            case "text":
+            default:
+                output += token.value;
+                lineLength += token.value.length;
+                lastCommandWasBlock = false;
+                break;
+        }
     }
 
     return output.trim();
 };
 
 /**
- * Normalize LaTeX output from MathLive
- * Cleans up and pretty-prints the LaTeX
+ * Clean and format LaTeX output from MathLive
  */
-const normalizeLaTeX = (latex: string): string => {
-    return prettyPrintLaTeX(latex);
+const cleanLaTeX = (latex: string): string => {
+    return formatLaTeXMath(latex, 80);
 };
 
 // MathLive module cache
@@ -348,30 +489,50 @@ export const initMathLiveForMathBlock = async (
 
     // Sync flag to prevent infinite loops
     let isSyncing = false;
+    let formatTimeout: number | null = null;
 
     // Sync function to update MathLive from Monaco
     const syncFromMonaco = (newValue: string) => {
         if (isSyncing) return;
         isSyncing = true;
-        codeElement.textContent = newValue;
-        if (mathfield.value !== newValue) {
+        if (codeElement) {
+            codeElement.textContent = newValue;
+        }
+        if (mathfield && mathfield.value !== newValue) {
             mathfield.value = newValue;
         }
         isSyncing = false;
     };
 
-    // Sync function to update Monaco from MathLive
+    // Sync function to update Monaco from MathLive (with debounced formatting)
     const syncFromMathLive = () => {
         if (isSyncing) return;
-        isSyncing = true;
-        // Normalize LaTeX to fix MathLive's formatting issues
-        const newValue = normalizeLaTeX(mathfield.value);
-        codeElement.textContent = newValue;
-        const monacoEditor = (monacoWrapper as any).__monacoEditor;
-        if (monacoEditor && monacoEditor.getValue() !== newValue) {
-            monacoEditor.setValue(newValue);
+
+        // Clear previous timeout
+        if (formatTimeout) {
+            clearTimeout(formatTimeout);
         }
-        isSyncing = false;
+
+        // Debounce formatting to reduce jitter
+        formatTimeout = window.setTimeout(() => {
+            if (isSyncing || !mathfield) return;
+            isSyncing = true;
+
+            // Get raw value and format
+            const rawValue = mathfield.value;
+            const formattedValue = cleanLaTeX(rawValue);
+
+            // Update code element and Monaco
+            if (codeElement) {
+                codeElement.textContent = formattedValue;
+            }
+            const monacoEditor = (monacoWrapper as any)?.__monacoEditor;
+            if (monacoEditor && monacoEditor.getValue() !== formattedValue) {
+                monacoEditor.setValue(formattedValue);
+            }
+
+            isSyncing = false;
+        }, 300); // 300ms debounce
     };
 
     // Listen for MathLive input changes

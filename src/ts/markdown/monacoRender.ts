@@ -10,6 +10,7 @@ declare const monaco: any;
 let monacoModule: any = null;
 let monacoLoading: Promise<any> | null = null;
 let mermaidLanguageRegistered = false;
+let latexLanguageRegistered = false;
 
 /**
  * Register Mermaid language with Monaco Editor
@@ -171,6 +172,172 @@ const registerMermaidLanguage = (monacoLib: any) => {
 };
 
 /**
+ * Register LaTeX language with Monaco Editor
+ */
+const registerLaTeXLanguage = (monacoLib: any) => {
+    if (latexLanguageRegistered) {
+        return;
+    }
+
+    // Register the language
+    monacoLib.languages.register({id: "latex"});
+
+    // Set language configuration
+    monacoLib.languages.setLanguageConfiguration("latex", {
+        comments: {
+            lineComment: "%",
+        },
+        brackets: [
+            ["{", "}"],
+            ["[", "]"],
+            ["(", ")"],
+        ],
+        autoClosingPairs: [
+            {open: "{", close: "}"},
+            {open: "[", close: "]"},
+            {open: "(", close: ")"},
+            {open: "$", close: "$"},
+        ],
+        surroundingPairs: [
+            {open: "{", close: "}"},
+            {open: "[", close: "]"},
+            {open: "(", close: ")"},
+            {open: "$", close: "$"},
+        ],
+    });
+
+    // Set tokenizer for syntax highlighting
+    monacoLib.languages.setMonarchTokensProvider("latex", {
+        defaultToken: "",
+        tokenPostfix: ".latex",
+
+        // Common LaTeX commands
+        commands: [
+            "frac", "dfrac", "tfrac", "cfrac",
+            "sqrt", "root", "sum", "prod", "int", "oint", "iint", "iiint",
+            "lim", "max", "min", "sup", "inf", "log", "ln", "exp", "sin", "cos", "tan",
+            "arcsin", "arccos", "arctan", "sinh", "cosh", "tanh",
+            "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
+            "iota", "kappa", "lambda", "mu", "nu", "xi", "pi", "rho", "sigma", "tau",
+            "upsilon", "phi", "chi", "psi", "omega",
+            "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta",
+            "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Pi", "Rho", "Sigma", "Tau",
+            "Upsilon", "Phi", "Chi", "Psi", "Omega",
+            "infty", "partial", "nabla", "forall", "exists", "nexists",
+            "in", "notin", "subset", "supset", "subseteq", "supseteq",
+            "cup", "cap", "setminus", "emptyset", "varnothing",
+            "pm", "mp", "times", "div", "cdot", "ast", "star", "circ", "bullet",
+            "oplus", "ominus", "otimes", "oslash", "odot",
+            "leq", "geq", "neq", "approx", "equiv", "sim", "simeq", "cong",
+            "prec", "succ", "preceq", "succeceq",
+            "ll", "gg", "lll", "ggg",
+            "leftarrow", "rightarrow", "leftrightarrow", "Leftarrow", "Rightarrow", "Leftrightarrow",
+            "uparrow", "downarrow", "updownarrow", "Uparrow", "Downarrow", "Updownarrow",
+            "mapsto", "longmapsto", "hookrightarrow", "hookleftarrow",
+            "left", "right", "bigl", "bigr", "Bigl", "Bigr", "biggl", "biggr", "Biggl", "Biggr",
+            "big", "Big", "bigg", "Bigg",
+            "text", "textbf", "textit", "textrm", "textsf", "texttt", "mathrm", "mathbf", "mathit", "mathsf", "mathtt", "mathcal", "mathbb", "mathfrak",
+            "overline", "underline", "hat", "bar", "vec", "dot", "ddot", "tilde", "widehat", "widetilde",
+            "binom", "tbinom", "dbinom",
+            "matrix", "pmatrix", "bmatrix", "Bmatrix", "vmatrix", "Vmatrix",
+            "cdots", "ldots", "vdots", "ddots",
+            "quad", "qquad", "hspace", "vspace",
+            "newline", "\\\\",
+            "begin", "end",
+        ],
+
+        // Environment names
+        environments: [
+            "equation", "equation*", "align", "align*", "aligned",
+            "gather", "gather*", "gathered",
+            "multline", "multline*",
+            "split", "cases", "dcases",
+            "matrix", "pmatrix", "bmatrix", "Bmatrix", "vmatrix", "Vmatrix",
+            "array", "eqnarray", "eqnarray*",
+            "subequations",
+        ],
+
+        tokenizer: {
+            root: [
+                // Comments
+                [/%.*$/, "comment"],
+
+                // Math delimiters
+                [/\$\$/, "delimiter.math"],
+                [/\$/, "delimiter.math"],
+                [/\\\[/, "delimiter.math"],
+                [/\\\]/, "delimiter.math"],
+                [/\\\(/, "delimiter.math"],
+                [/\\\)/, "delimiter.math"],
+
+                // Commands with arguments - special highlighting
+                [/\\(begin|end)/, {token: "keyword", next: "@environment"}],
+
+                // Greek letters and special symbols
+                [/\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|Lambda|Mu|Nu|Xi|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega|infty|partial|nabla)\b/, "constant.language"],
+
+                // Math operators
+                [/\\(frac|dfrac|tfrac|cfrac|sqrt|sum|prod|int|oint|iint|iiint|lim|max|min|sup|inf|log|ln|exp|sin|cos|tan|arcsin|arccos|arctan|sinh|cosh|tanh|binom|tbinom|dbinom)\b/, "keyword.function"],
+
+                // Sizing and delimiters
+                [/\\(left|right|bigl|bigr|Bigl|Bigr|biggl|biggr|Biggl|Biggr|big|Big|bigg|Bigg)\b/, "keyword.delimiter"],
+
+                // Text formatting
+                [/\\(text|textbf|textit|textrm|textsf|texttt|mathrm|mathbf|mathit|mathsf|mathtt|mathcal|mathbb|mathfrak)\b/, "keyword.text"],
+
+                // Accents
+                [/\\(overline|underline|hat|bar|vec|dot|ddot|tilde|widehat|widetilde)\b/, "keyword.accent"],
+
+                // Relations and operators
+                [/\\(leq|geq|neq|approx|equiv|sim|simeq|cong|prec|succ|preceq|succeq|ll|gg|in|notin|subset|supset|subseteq|supseteq|cup|cap|setminus|emptyset|varnothing|pm|mp|times|div|cdot|ast|star|circ|bullet|oplus|ominus|otimes|oslash|odot|forall|exists|nexists)\b/, "operator"],
+
+                // Arrows
+                [/\\(leftarrow|rightarrow|leftrightarrow|Leftarrow|Rightarrow|Leftrightarrow|uparrow|downarrow|updownarrow|Uparrow|Downarrow|Updownarrow|mapsto|longmapsto|hookrightarrow|hookleftarrow|to)\b/, "operator.arrow"],
+
+                // Dots
+                [/\\(cdots|ldots|vdots|ddots)\b/, "constant"],
+
+                // Any other command
+                [/\\[a-zA-Z@]+/, "keyword"],
+
+                // Escaped characters
+                [/\\[\\{}$&#%_^~]/, "string.escape"],
+
+                // Superscript and subscript
+                [/[\^_]/, "operator.script"],
+
+                // Braces
+                [/[{}]/, "delimiter.brace"],
+                [/[\[\]]/, "delimiter.bracket"],
+                [/[()]/, "delimiter.parenthesis"],
+
+                // Numbers
+                [/-?\d+\.?\d*/, "number"],
+
+                // Operators
+                [/[=+\-*/<>]/, "operator"],
+
+                // Whitespace
+                [/\s+/, "white"],
+            ],
+
+            environment: [
+                [/\{/, "delimiter.brace", "@environmentName"],
+                [/./, "", "@pop"],
+            ],
+
+            environmentName: [
+                [/(equation\*?|align\*?|aligned|gather\*?|gathered|multline\*?|split|cases|dcases|matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|array|eqnarray\*?|subequations)/, "string.environment"],
+                [/[a-zA-Z*]+/, "string.environment"],
+                [/\}/, "delimiter.brace", "@pop"],
+            ],
+        },
+    });
+
+    latexLanguageRegistered = true;
+};
+
+/**
  * Lazy load Monaco Editor from CDN
  */
 export const loadMonaco = async (cdn: string): Promise<any> => {
@@ -202,6 +369,7 @@ export const loadMonaco = async (cdn: string): Promise<any> => {
                 monacoModule = monaco;
                 // Register custom languages
                 registerMermaidLanguage(monacoModule);
+                registerLaTeXLanguage(monacoModule);
                 resolve(monacoModule);
             }, (error: any) => {
                 monacoLoading = null;
@@ -331,6 +499,10 @@ export class MonacoManager {
             "c++": "cpp",
             "c#": "csharp",
             golang: "go",
+            // LaTeX
+            tex: "latex",
+            latex: "latex",
+            math: "latex",
             // Special blocks - use plaintext
             mermaid: "mermaid",
             flowchart: "plaintext",
