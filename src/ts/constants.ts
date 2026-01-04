@@ -111,7 +111,7 @@ export abstract class Constants {
     public static readonly CODE_THEME_LIGHT = "github";
     // Default font configuration
     public static readonly FONT_OPTIONS: IFontConfig = {
-        content: "Noto Sans",
+        content: "Nunito Sans",
         code: "Fira Code",
         useBundledFonts: true,
     };

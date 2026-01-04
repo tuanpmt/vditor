@@ -175,11 +175,21 @@ module.exports = [
                     {from: 'node_modules/mathlive/mathlive-static.css', to: 'js/mathlive/mathlive-static.css'},
                     {from: 'node_modules/mathlive/fonts', to: 'js/mathlive/fonts'},
                     {from: 'node_modules/mathlive/sounds', to: 'js/mathlive/sounds'},
-                    // Bundled fonts
+                    // Bundled fonts - Noto Sans (Latin Extended)
                     {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-400-normal.woff2', to: 'fonts/noto-sans-latin-ext-400-normal.woff2'},
                     {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-500-normal.woff2', to: 'fonts/noto-sans-latin-ext-500-normal.woff2'},
                     {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-600-normal.woff2', to: 'fonts/noto-sans-latin-ext-600-normal.woff2'},
                     {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-700-normal.woff2', to: 'fonts/noto-sans-latin-ext-700-normal.woff2'},
+                    // Bundled fonts - Nunito Sans (Vietnamese + Latin)
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-vietnamese-400-normal.woff2', to: 'fonts/nunito-sans-vietnamese-400-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-vietnamese-500-normal.woff2', to: 'fonts/nunito-sans-vietnamese-500-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-vietnamese-600-normal.woff2', to: 'fonts/nunito-sans-vietnamese-600-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-vietnamese-700-normal.woff2', to: 'fonts/nunito-sans-vietnamese-700-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-latin-400-normal.woff2', to: 'fonts/nunito-sans-latin-400-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-latin-500-normal.woff2', to: 'fonts/nunito-sans-latin-500-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-latin-600-normal.woff2', to: 'fonts/nunito-sans-latin-600-normal.woff2'},
+                    {from: 'node_modules/@fontsource/nunito-sans/files/nunito-sans-latin-700-normal.woff2', to: 'fonts/nunito-sans-latin-700-normal.woff2'},
+                    // Bundled fonts - Fira Code (monospace)
                     {from: 'node_modules/@fontsource/fira-code/files/fira-code-latin-400-normal.woff2', to: 'fonts/fira-code-latin-400-normal.woff2'},
                     {from: 'node_modules/@fontsource/fira-code/files/fira-code-latin-500-normal.woff2', to: 'fonts/fira-code-latin-500-normal.woff2'},
                     {from: 'types', to: 'types'},
