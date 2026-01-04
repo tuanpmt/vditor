@@ -377,14 +377,26 @@ interface IPreviewTheme {
 
 /** Font configuration for content and code */
 interface IFontConfig {
-    /** Font family for content text. Default: 'Noto Sans' */
+    /** Font family for content text. Default: 'Nunito Sans' */
     content?: string;
     /** Font family for code blocks and inline code. Default: 'Fira Code' */
     code?: string;
     /** Custom Google Fonts URL or other font URL to load */
     fontUrl?: string;
-    /** Use bundled fonts (Noto Sans + Fira Code). Default: true */
+    /** Use bundled fonts (Nunito Sans + Fira Code). Default: true */
     useBundledFonts?: boolean;
+}
+
+/** Custom clipboard handlers for webview environments (VS Code) */
+interface IClipboardOptions {
+    /** Called when copy is triggered in Monaco editor */
+    onCopy?: (text: string) => void;
+    /** Called when cut is triggered in Monaco editor */
+    onCut?: (text: string) => void;
+    /** Called when paste is triggered in Monaco editor, call callback with text to paste */
+    onPaste?: (callback: (text: string) => void) => void;
+    /** Called when save (Cmd/Ctrl+S) is triggered in Monaco editor */
+    onSave?: () => void;
 }
 
 /** @link https://ld246.com/article/1549638745630#options-upload */
@@ -826,6 +838,8 @@ interface IOptions {
     icon?: "ant" | "material";
     /** 字体配置 */
     font?: IFontConfig;
+    /** Custom clipboard handlers for webview environments (VS Code) */
+    clipboard?: IClipboardOptions;
     /** @link https://ld246.com/article/1549638745630#options-upload */
     upload?: IUpload;
     /** @link https://ld246.com/article/1549638745630#options-classes */
@@ -986,6 +1000,9 @@ interface IVditor {
         destroy(elementId?: string): void;
         updateTheme(vditorTheme: string): void;
         isEnabled(): boolean;
+        getFocusedEditor(): any;
+        pasteText(text: string): boolean;
+        getSelectedText(): string;
     };
 }
 

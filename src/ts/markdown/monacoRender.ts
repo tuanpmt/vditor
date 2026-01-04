@@ -396,6 +396,7 @@ const getMonacoTheme = (vditorTheme: string): string => {
  */
 export class MonacoManager {
     private instances: Map<string, any> = new Map();
+    private pasteCallbacks: Map<string, (text: string) => void> = new Map();
     private vditor: IVditor;
 
     constructor(vditor: IVditor) {
@@ -453,6 +454,9 @@ export class MonacoManager {
         // Store instance
         this.instances.set(editorId, editor);
 
+        // Override clipboard commands if custom handlers provided (for VS Code webview)
+        this.setupClipboardOverrides(editor, editorId, monacoLib);
+
         // Setup change handler
         if (onChange) {
             editor.onDidChangeModelContent(() => {
@@ -480,6 +484,73 @@ export class MonacoManager {
         const height = Math.min(Math.max(lineCount * lineHeight + 20, minHeight), maxHeight);
         container.style.height = `${height}px`;
         editor.layout();
+    }
+
+    /**
+     * Setup clipboard command overrides for VS Code webview compatibility
+     */
+    private setupClipboardOverrides(editor: any, editorId: string, monacoLib: any) {
+        const clipboard = this.vditor.options.clipboard;
+        if (!clipboard) {
+            return;
+        }
+
+        // Override Cmd/Ctrl+C (Copy)
+        if (clipboard.onCopy) {
+            editor.addCommand(monacoLib.KeyMod.CtrlCmd | monacoLib.KeyCode.KeyC, () => {
+                const selection = editor.getSelection();
+                if (selection && !selection.isEmpty()) {
+                    const text = editor.getModel().getValueInRange(selection);
+                    clipboard.onCopy(text);
+                }
+            });
+        }
+
+        // Override Cmd/Ctrl+X (Cut)
+        if (clipboard.onCut) {
+            editor.addCommand(monacoLib.KeyMod.CtrlCmd | monacoLib.KeyCode.KeyX, () => {
+                const selection = editor.getSelection();
+                if (selection && !selection.isEmpty()) {
+                    const text = editor.getModel().getValueInRange(selection);
+                    clipboard.onCut(text);
+                    // Delete selection
+                    editor.executeEdits("cut", [{
+                        range: selection,
+                        text: "",
+                    }]);
+                }
+            });
+        }
+
+        // Override Cmd/Ctrl+V (Paste)
+        if (clipboard.onPaste) {
+            editor.addCommand(monacoLib.KeyMod.CtrlCmd | monacoLib.KeyCode.KeyV, () => {
+                // Store callback for async paste operation
+                this.pasteCallbacks.set(editorId, (text: string) => {
+                    const selection = editor.getSelection();
+                    editor.executeEdits("paste", [{
+                        range: selection,
+                        text,
+                        forceMoveMarkers: true,
+                    }]);
+                });
+                // Request paste from host - callback will be called with text
+                clipboard.onPaste((text: string) => {
+                    const callback = this.pasteCallbacks.get(editorId);
+                    if (callback) {
+                        callback(text);
+                        this.pasteCallbacks.delete(editorId);
+                    }
+                });
+            });
+        }
+
+        // Override Cmd/Ctrl+S (Save)
+        if (clipboard.onSave) {
+            editor.addCommand(monacoLib.KeyMod.CtrlCmd | monacoLib.KeyCode.KeyS, () => {
+                clipboard.onSave();
+            });
+        }
     }
 
     /**
@@ -576,6 +647,53 @@ export class MonacoManager {
      */
     isEnabled(): boolean {
         return this.vditor.options.preview?.monaco?.enable !== false;
+    }
+
+    /**
+     * Get currently focused Monaco editor instance
+     */
+    getFocusedEditor(): any {
+        // Check all instances for focus
+        const entries = Array.from(this.instances.entries());
+        for (let i = 0; i < entries.length; i++) {
+            const editor = entries[i][1];
+            if (editor.hasTextFocus()) {
+                return editor;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Paste text into the currently focused editor
+     */
+    pasteText(text: string): boolean {
+        const editor = this.getFocusedEditor();
+        if (!editor) {
+            return false;
+        }
+        const selection = editor.getSelection();
+        editor.executeEdits("paste", [{
+            range: selection,
+            text,
+            forceMoveMarkers: true,
+        }]);
+        return true;
+    }
+
+    /**
+     * Get selected text from the currently focused editor
+     */
+    getSelectedText(): string {
+        const editor = this.getFocusedEditor();
+        if (!editor) {
+            return "";
+        }
+        const selection = editor.getSelection();
+        if (!selection || selection.isEmpty()) {
+            return "";
+        }
+        return editor.getModel().getValueInRange(selection);
     }
 }
 

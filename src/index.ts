@@ -220,6 +220,50 @@ class Vditor extends VditorMethod {
         }
     }
 
+    /** 获取选中文本 (优先从 Monaco 编辑器获取) - For VS Code webview clipboard */
+    public getSelectedText(): string {
+        // Check Monaco code block editors first
+        if (this.vditor.monaco) {
+            const monacoText = this.vditor.monaco.getSelectedText();
+            if (monacoText) {
+                return monacoText;
+            }
+        }
+        // Check Monaco SV editor
+        if (this.vditor.currentMode === "sv" && this.vditor.sv?.isMonacoMode?.()) {
+            const svEditor = this.vditor.sv as any;
+            if (svEditor.monacoEditor?.hasTextFocus?.()) {
+                return svEditor.getSelection?.() || "";
+            }
+        }
+        // Fall back to contenteditable
+        return this.getSelection() || "";
+    }
+
+    /** 粘贴文本到当前焦点编辑器 - For VS Code webview clipboard */
+    public pasteText(text: string): boolean {
+        // Check Monaco code block editors first
+        if (this.vditor.monaco) {
+            if (this.vditor.monaco.pasteText(text)) {
+                return true;
+            }
+        }
+        // Check Monaco SV editor
+        if (this.vditor.currentMode === "sv" && this.vditor.sv?.isMonacoMode?.()) {
+            const svEditor = this.vditor.sv as any;
+            if (svEditor.monacoEditor?.hasTextFocus?.()) {
+                svEditor.insertText?.(text);
+                return true;
+            }
+        }
+        // Fall back to contenteditable - use insertValue
+        if (document.activeElement?.closest(".vditor")) {
+            this.insertValue(text, true);
+            return true;
+        }
+        return false;
+    }
+
     /** 设置预览区域内容 */
     public renderPreview(value?: string) {
         this.vditor.preview.render(this.vditor, value);
