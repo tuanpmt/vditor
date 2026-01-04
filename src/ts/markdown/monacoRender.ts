@@ -4,8 +4,7 @@ import {processCodeRender} from "../util/processCode";
 
 declare const monaco: any;
 
-// Monaco CDN URL (using jsDelivr for AMD build)
-const MONACO_CDN = "https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/min";
+// Monaco will be loaded from local CDN (dist/js/monaco)
 
 // Monaco module cache
 let monacoModule: any = null;
@@ -182,9 +181,11 @@ export const loadMonaco = async (cdn: string): Promise<any> => {
         return monacoLoading;
     }
 
+    const monacoPath = `${cdn}/dist/js/monaco`;
+
     monacoLoading = (async () => {
-        // Load AMD loader from Monaco CDN (jsDelivr has AMD build)
-        await addScript(`${MONACO_CDN}/vs/loader.min.js`, "vditorMonacoLoaderScript");
+        // Load AMD loader from local Monaco files
+        await addScript(`${monacoPath}/vs/loader.js`, "vditorMonacoLoaderScript");
 
         // Get AMD require from window (loaded by Monaco's loader.min.js)
         // Using window access to avoid webpack trying to bundle it
@@ -192,7 +193,7 @@ export const loadMonaco = async (cdn: string): Promise<any> => {
 
         // Configure AMD loader paths
         amdRequire.config({
-            paths: {vs: `${MONACO_CDN}/vs`},
+            paths: {vs: `${monacoPath}/vs`},
         });
 
         // Load Monaco editor

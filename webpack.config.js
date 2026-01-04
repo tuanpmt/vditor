@@ -169,6 +169,7 @@ module.exports = [
                     {from: 'node_modules/@mermaid-js/layout-tidy-tree/dist', to: 'js/mermaid/layout-tidy-tree'},
                     {from: 'node_modules/wavedrom/wavedrom.min.js', to: 'js/wavedrom/wavedrom.min.js'},
                     {from: 'node_modules/wavedrom/skins/default.js', to: 'js/wavedrom/default.js'},
+                    {from: 'node_modules/monaco-editor/min/vs', to: 'js/monaco/vs'},
                     {from: 'types', to: 'types'},
                 ],
             }),
