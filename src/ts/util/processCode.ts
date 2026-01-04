@@ -5,6 +5,7 @@ import {flowchartRender} from "../markdown/flowchartRender";
 import {graphvizRender} from "../markdown/graphvizRender";
 import {highlightRender} from "../markdown/highlightRender";
 import {mathRender} from "../markdown/mathRender";
+import {renderMathLivePreview} from "../markdown/mathliveRender";
 import {mermaidRender} from "../markdown/mermaidRender";
 import {markmapRender} from "../markdown/markmapRender";
 import {mindmapRender} from "../markdown/mindmapRender";
@@ -86,7 +87,8 @@ export const processCodeRender = (previewPanel: HTMLElement, vditor: IVditor) =>
     } else if (language === "graphviz") {
         graphvizRender(previewPanel, vditor.options.cdn);
     } else if (language === "math") {
-        mathRender(previewPanel, {cdn: vditor.options.cdn, math: vditor.options.preview.math});
+        // Use MathLive for rendering math in IR mode (read-only preview)
+        renderMathLivePreview(previewPanel, vditor);
     } else {
         const cRender = vditor.options.customRenders.find((item) => {
             if (item.language === language) {

@@ -47,9 +47,12 @@ const previousIsNode = (range: Range) => {
 };
 
 export const expandMarker = (range: Range, vditor: IVditor) => {
-    // Check if focus is inside Monaco editor - if so, don't process
+    // Check if focus is inside Monaco or MathLive editor - if so, don't process
     const activeElement = document.activeElement;
-    if (activeElement && activeElement.closest(".vditor-monaco-wrapper")) {
+    if (activeElement && (
+        activeElement.closest(".vditor-monaco-wrapper") ||
+        activeElement.closest(".vditor-mathlive-editor-wrapper")
+    )) {
         return;
     }
 
@@ -93,7 +96,7 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
 
         // Initialize MathLive for math blocks (only if not already initialized)
         if (nodeElement.getAttribute("data-type") === "math-block") {
-            if (!nodeElement.querySelector(".vditor-mathlive-wrapper")) {
+            if (!nodeElement.querySelector(".vditor-mathlive-editor-wrapper")) {
                 initMathLiveForMathBlock(nodeElement, vditor);
             }
         }
@@ -111,7 +114,7 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
         }
         // Initialize MathLive for math blocks (only if not already initialized)
         if (nextNode.getAttribute("data-type") === "math-block") {
-            if (!nextNode.querySelector(".vditor-mathlive-wrapper")) {
+            if (!nextNode.querySelector(".vditor-mathlive-editor-wrapper")) {
                 initMathLiveForMathBlock(nextNode, vditor);
             }
         }
@@ -130,7 +133,7 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
         }
         // Initialize MathLive for math blocks (only if not already initialized)
         if (previousNode.getAttribute("data-type") === "math-block") {
-            if (!previousNode.querySelector(".vditor-mathlive-wrapper")) {
+            if (!previousNode.querySelector(".vditor-mathlive-editor-wrapper")) {
                 initMathLiveForMathBlock(previousNode, vditor);
             }
         }

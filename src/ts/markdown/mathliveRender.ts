@@ -34,12 +34,54 @@ export const loadMathLive = async (cdn: string): Promise<void> => {
 };
 
 /**
- * Initialize MathLive for a math block element in IR mode
+ * Render math preview using MathLive (read-only mode)
+ * This replaces KaTeX/MathJax for math block previews
+ */
+export const renderMathLivePreview = async (
+    previewElement: HTMLElement,
+    vditor: IVditor,
+): Promise<void> => {
+    // Get CDN path
+    const cdn = vditor.options.cdn !== undefined ? vditor.options.cdn : Constants.CDN;
+
+    // Load MathLive
+    await loadMathLive(cdn);
+
+    // Get the code element to extract LaTeX
+    const codeElement = previewElement.querySelector("code") as HTMLElement;
+    if (!codeElement) {
+        return;
+    }
+
+    const mathContent = codeElement.textContent || "";
+
+    // Clear preview and create MathLive element
+    previewElement.innerHTML = "";
+
+    // Create read-only MathfieldElement
+    const mathfield = new MathfieldElement();
+    mathfield.className = "vditor-mathlive-preview";
+    mathfield.value = mathContent;
+
+    // Configure for read-only display
+    mathfield.readOnly = true;
+    mathfield.letterShapeStyle = "tex";
+    mathfield.virtualKeyboardMode = "off";
+    mathfield.menuItems = [];
+
+    // Make it non-focusable
+    mathfield.setAttribute("tabindex", "-1");
+
+    previewElement.appendChild(mathfield);
+};
+
+/**
+ * Initialize MathLive editor for a math block element in IR mode (edit mode)
+ * Creates editable MathLive + Monaco editor for source code
  */
 export const initMathLiveForMathBlock = async (
     mathBlockElement: HTMLElement,
     vditor: IVditor,
-    onChange?: (content: string) => void,
 ): Promise<any> => {
     // Get code element containing math content
     const codeElement = mathBlockElement.querySelector("pre > code") as HTMLElement;
@@ -47,8 +89,8 @@ export const initMathLiveForMathBlock = async (
         return null;
     }
 
-    // Check if MathLive is already initialized
-    if (mathBlockElement.querySelector(".vditor-mathlive-wrapper")) {
+    // Check if MathLive editor is already initialized
+    if (mathBlockElement.querySelector(".vditor-mathlive-editor-wrapper")) {
         return null;
     }
 
@@ -67,43 +109,90 @@ export const initMathLiveForMathBlock = async (
         preElement.style.display = "none";
     }
 
-    // Create MathLive wrapper
-    const wrapper = document.createElement("div");
-    wrapper.className = "vditor-mathlive-wrapper";
-    wrapper.setAttribute("contenteditable", "false");
+    // Hide the preview element
+    const previewElement = mathBlockElement.querySelector(".vditor-ir__preview") as HTMLElement;
+    if (previewElement) {
+        previewElement.style.display = "none";
+    }
+
+    // Create editor wrapper
+    const editorWrapper = document.createElement("div");
+    editorWrapper.className = "vditor-mathlive-editor-wrapper";
+    editorWrapper.setAttribute("contenteditable", "false");
 
     // Stop events from bubbling to vditor
-    wrapper.addEventListener("input", (e) => e.stopPropagation());
-    wrapper.addEventListener("keydown", (e) => e.stopPropagation());
-    wrapper.addEventListener("keyup", (e) => e.stopPropagation());
-    wrapper.addEventListener("keypress", (e) => e.stopPropagation());
+    editorWrapper.addEventListener("input", (e) => e.stopPropagation());
+    editorWrapper.addEventListener("keydown", (e) => e.stopPropagation());
+    editorWrapper.addEventListener("keyup", (e) => e.stopPropagation());
+    editorWrapper.addEventListener("keypress", (e) => e.stopPropagation());
 
-    // Create MathfieldElement
+    // Create MathLive editor (editable)
     const mathfield = new MathfieldElement();
     mathfield.className = "vditor-mathlive-field";
     mathfield.value = mathContent;
 
-    // Configure mathfield options
+    // Configure mathfield options for editing
     mathfield.letterShapeStyle = "tex";
     mathfield.smartMode = true;
     mathfield.virtualKeyboardMode = "manual";
 
-    // Handle input changes
-    mathfield.addEventListener("input", () => {
+    // Create Monaco editor wrapper
+    const monacoWrapper = document.createElement("div");
+    monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
+
+    // Sync function to update both editors
+    let isUpdating = false;
+
+    const syncFromMathLive = () => {
+        if (isUpdating) return;
+        isUpdating = true;
         const newValue = mathfield.value;
         codeElement.textContent = newValue;
-        if (onChange) {
-            onChange(newValue);
+        // Update Monaco if exists
+        const monacoInstance = (monacoWrapper as any).__monacoEditor;
+        if (monacoInstance && monacoInstance.getValue() !== newValue) {
+            monacoInstance.setValue(newValue);
         }
-        // Update preview
-        updateMathPreview(mathBlockElement, vditor);
-    });
+        isUpdating = false;
+    };
 
-    wrapper.appendChild(mathfield);
+    const syncFromMonaco = (newValue: string) => {
+        if (isUpdating) return;
+        isUpdating = true;
+        codeElement.textContent = newValue;
+        if (mathfield.value !== newValue) {
+            mathfield.value = newValue;
+        }
+        isUpdating = false;
+    };
 
-    // Insert wrapper after the code element's parent
-    if (preElement) {
-        preElement.parentElement?.insertBefore(wrapper, preElement.nextSibling);
+    // Handle MathLive input changes
+    mathfield.addEventListener("input", syncFromMathLive);
+
+    editorWrapper.appendChild(mathfield);
+    editorWrapper.appendChild(monacoWrapper);
+
+    // Insert wrapper after the preview element or pre element
+    if (previewElement) {
+        previewElement.parentElement?.insertBefore(editorWrapper, previewElement.nextSibling);
+    } else if (preElement) {
+        preElement.parentElement?.insertBefore(editorWrapper, preElement.nextSibling);
+    }
+
+    // Initialize Monaco editor if available
+    if (vditor.monaco?.isEnabled()) {
+        const monacoManager = vditor.monaco;
+        const monacoId = `mathlive-monaco-${Date.now()}`;
+        monacoWrapper.id = monacoId;
+
+        monacoManager.create(
+            monacoWrapper,
+            "latex",
+            mathContent,
+            syncFromMonaco,
+        ).then((editor: any) => {
+            (monacoWrapper as any).__monacoEditor = editor;
+        });
     }
 
     // Focus the mathfield
@@ -115,50 +204,29 @@ export const initMathLiveForMathBlock = async (
 };
 
 /**
- * Update math preview after content change
- */
-const updateMathPreview = (mathBlockElement: HTMLElement, vditor: IVditor) => {
-    const previewElement = mathBlockElement.querySelector(".vditor-ir__preview") as HTMLElement;
-    if (!previewElement) {
-        return;
-    }
-
-    const codeElement = mathBlockElement.querySelector("pre > code") as HTMLElement;
-    if (!codeElement) {
-        return;
-    }
-
-    const preElement = codeElement.parentElement;
-    if (preElement) {
-        previewElement.innerHTML = preElement.innerHTML;
-        // Re-render math
-        import("./mathRender").then(({mathRender}) => {
-            mathRender(previewElement, {
-                cdn: vditor.options.cdn,
-                math: vditor.options.preview?.math,
-            });
-        });
-    }
-};
-
-/**
- * Destroy MathLive for a math block
+ * Destroy MathLive editor for a math block
  */
 export const destroyMathLiveForMathBlock = (
     mathBlockElement: HTMLElement,
     vditor: IVditor,
 ): void => {
-    const wrapper = mathBlockElement.querySelector(".vditor-mathlive-wrapper") as HTMLElement;
-    if (!wrapper) {
+    const editorWrapper = mathBlockElement.querySelector(".vditor-mathlive-editor-wrapper") as HTMLElement;
+    if (!editorWrapper) {
         return;
     }
 
-    // Sync final content
-    const mathfield = wrapper.querySelector(".vditor-mathlive-field") as any;
+    // Sync final content from MathLive
+    const mathfield = editorWrapper.querySelector(".vditor-mathlive-field") as any;
     const codeElement = mathBlockElement.querySelector("pre > code") as HTMLElement;
 
     if (mathfield && codeElement) {
         codeElement.textContent = mathfield.value;
+    }
+
+    // Destroy Monaco editor if exists
+    const monacoWrapper = editorWrapper.querySelector(".vditor-mathlive-monaco-wrapper") as any;
+    if (monacoWrapper?.__monacoEditor) {
+        monacoWrapper.__monacoEditor.dispose();
     }
 
     // Show the pre element again
@@ -167,18 +235,17 @@ export const destroyMathLiveForMathBlock = (
         preElement.style.display = "";
     }
 
-    // Update preview with final content
+    // Show and update the preview element
     const previewElement = mathBlockElement.querySelector(".vditor-ir__preview") as HTMLElement;
-    if (previewElement && preElement) {
-        previewElement.innerHTML = preElement.innerHTML;
-        import("./mathRender").then(({mathRender}) => {
-            mathRender(previewElement, {
-                cdn: vditor.options.cdn,
-                math: vditor.options.preview?.math,
-            });
-        });
+    if (previewElement) {
+        previewElement.style.display = "";
+        // Re-render with MathLive
+        if (preElement) {
+            previewElement.innerHTML = preElement.innerHTML;
+            renderMathLivePreview(previewElement, vditor);
+        }
     }
 
-    // Remove wrapper
-    wrapper.remove();
+    // Remove editor wrapper
+    editorWrapper.remove();
 };
