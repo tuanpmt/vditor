@@ -1201,12 +1201,22 @@ export const destroyMonacoForCodeBlock = (
                 previewElement.innerHTML = preElement.innerHTML;
                 processCodeRender(previewElement, vditor);
             }
-            // Reset scroll position AFTER re-render (with delay for async renders)
+            // Reset inline styles from column layout
+            previewElement.style.width = "";
+            // Reset scroll position on preview and its code child
             previewElement.scrollLeft = 0;
             previewElement.scrollTop = 0;
+            const codeInPreview = previewElement.querySelector("code");
+            if (codeInPreview) {
+                (codeInPreview as HTMLElement).scrollLeft = 0;
+            }
+            // Delayed reset for async renders (wavedrom/mermaid)
             setTimeout(() => {
                 previewElement.scrollLeft = 0;
                 previewElement.scrollTop = 0;
+                if (codeInPreview) {
+                    (codeInPreview as HTMLElement).scrollLeft = 0;
+                }
             }, 100);
             // Keep pre element hidden when preview is shown (WYSIWYG/IR collapsed state)
             if (preElement) {

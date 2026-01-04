@@ -459,6 +459,13 @@
     flex-direction: row !important;
     align-items: stretch !important;
 
+    // Hide fence markers in column layout (no horizontal space)
+    span[data-type="code-block-open-marker"],
+    span[data-type="code-block-close-marker"],
+    span[data-type="code-block-info"] {
+      display: none !important;
+    }
+
     .vditor-monaco-wrapper {
       flex-shrink: 0;
       margin: 0;
