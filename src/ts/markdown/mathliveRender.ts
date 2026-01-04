@@ -5,10 +5,9 @@ import {Constants} from "../constants";
 declare const MathfieldElement: any;
 
 /**
- * Normalize LaTeX output from MathLive
- * Removes extra spaces and fixes formatting issues
+ * Clean up LaTeX string - remove extra spaces but preserve structure
  */
-const normalizeLaTeX = (latex: string): string => {
+const cleanLaTeX = (latex: string): string => {
     if (!latex) return latex;
 
     let result = latex;
@@ -29,23 +28,150 @@ const normalizeLaTeX = (latex: string): string => {
     result = result.replace(/\s+\^/g, "^");
     result = result.replace(/\s+_/g, "_");
 
-    // Remove spaces after ^ and _ if followed by { or single char
+    // Remove spaces after ^ and _
     result = result.replace(/\^\s+/g, "^");
     result = result.replace(/_\s+/g, "_");
 
     // Remove spaces after backslash commands before {
     result = result.replace(/(\\[a-zA-Z]+)\s+\{/g, "$1{");
 
-    // Remove unnecessary line breaks within the expression
-    result = result.replace(/\n\s*/g, " ");
-
-    // Remove multiple spaces (but keep single spaces)
-    result = result.replace(/  +/g, " ");
-
-    // Trim the result
-    result = result.trim();
+    // Normalize whitespace (but don't collapse line breaks yet)
+    result = result.replace(/[ \t]+/g, " ");
 
     return result;
+};
+
+/**
+ * Simple LaTeX math pretty-printer
+ * Formats common structures with line breaks and indentation
+ */
+const prettyPrintLaTeX = (latex: string): string => {
+    if (!latex) return latex;
+
+    // First clean up the LaTeX
+    let result = cleanLaTeX(latex);
+
+    // Remove existing line breaks to start fresh
+    result = result.replace(/\n\s*/g, " ").trim();
+
+    // If it's a short expression (< 60 chars), keep it single line
+    if (result.length < 60) {
+        return result;
+    }
+
+    // Track brace depth for indentation
+    const indent = (depth: number): string => "  ".repeat(depth);
+
+    // Parse and format
+    let output = "";
+    let depth = 0;
+    let i = 0;
+
+    // Commands that should have line break after their content
+    const breakAfterCommands = ["\\frac", "\\dfrac", "\\tfrac", "\\cfrac"];
+
+    while (i < result.length) {
+        // Check for LaTeX commands
+        if (result[i] === "\\") {
+            // Find command name
+            let cmdEnd = i + 1;
+            while (cmdEnd < result.length && /[a-zA-Z]/.test(result[cmdEnd])) {
+                cmdEnd++;
+            }
+            const cmd = result.slice(i, cmdEnd);
+
+            // Check if this is a frac command with nested content
+            if (breakAfterCommands.includes(cmd)) {
+                // Check if the frac contains other fracs (nested)
+                const afterCmd = result.slice(cmdEnd);
+                const hasNestedFrac = /^{[^}]*\\(?:d?t?c?frac)/.test(afterCmd);
+
+                if (hasNestedFrac && depth < 3) {
+                    // Add line break before frac at depth > 0
+                    if (depth > 0 && output.length > 0 && !output.endsWith("\n")) {
+                        output += "\n" + indent(depth);
+                    }
+                }
+            }
+
+            // Check for \begin and \end
+            if (cmd === "\\begin" || cmd === "\\end") {
+                if (cmd === "\\begin") {
+                    if (output.length > 0 && !output.endsWith("\n")) {
+                        output += "\n" + indent(depth);
+                    }
+                    output += cmd;
+                    depth++;
+                } else {
+                    depth = Math.max(0, depth - 1);
+                    if (!output.endsWith("\n")) {
+                        output += "\n" + indent(depth);
+                    }
+                    output += cmd;
+                }
+                i = cmdEnd;
+                continue;
+            }
+
+            output += cmd;
+            i = cmdEnd;
+            continue;
+        }
+
+        // Track brace depth
+        if (result[i] === "{") {
+            output += "{";
+            depth++;
+            i++;
+            continue;
+        }
+
+        if (result[i] === "}") {
+            depth = Math.max(0, depth - 1);
+            output += "}";
+            i++;
+
+            // Add line break after closing brace of frac denominator at top level
+            if (depth === 0 && i < result.length) {
+                const nextChar = result[i];
+                // If next is an operator or another frac, consider line break
+                if (nextChar === "=" || nextChar === "+" || nextChar === "-") {
+                    output += " ";
+                }
+            }
+            continue;
+        }
+
+        // Handle = at top level - add line break after
+        if (result[i] === "=" && depth <= 1) {
+            output += "=";
+            // Add line break after = if expression is long enough
+            if (result.length > 80) {
+                output += "\n" + indent(1);
+            } else {
+                output += " ";
+            }
+            i++;
+            // Skip space after =
+            while (i < result.length && result[i] === " ") {
+                i++;
+            }
+            continue;
+        }
+
+        output += result[i];
+        i++;
+    }
+
+    return output.trim();
+};
+
+/**
+ * Normalize LaTeX output from MathLive
+ * Cleans up and pretty-prints the LaTeX
+ */
+const normalizeLaTeX = (latex: string): string => {
+    return prettyPrintLaTeX(latex);
 };
 
 // MathLive module cache
