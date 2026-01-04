@@ -14,6 +14,7 @@ import {mindmapRender} from "../markdown/mindmapRender";
 import {plantumlRender} from "../markdown/plantumlRender";
 import {wavedromRender} from "../markdown/wavedromRender";
 import {getEventName} from "../util/compatibility";
+import {transformImagePaths} from "../util/function";
 import {hasClosestByClassName, hasClosestByMatchTag} from "../util/hasClosest";
 import {hasClosestByTag} from "../util/hasClosestByHeadings";
 import {setSelectionFocus} from "../util/selection";
@@ -187,6 +188,7 @@ export class Preview {
                             if (vditor.options.preview.transform) {
                                 html = vditor.options.preview.transform(html);
                             }
+                            html = transformImagePaths(html, vditor);
                             this.previewElement.innerHTML = html;
                             this.afterRender(vditor, renderStartTime);
                         }
@@ -199,6 +201,7 @@ export class Preview {
                 if (vditor.options.preview.transform) {
                     html = vditor.options.preview.transform(html);
                 }
+                html = transformImagePaths(html, vditor);
                 this.previewElement.innerHTML = html;
                 this.afterRender(vditor, renderStartTime);
             }

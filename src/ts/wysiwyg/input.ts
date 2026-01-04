@@ -1,4 +1,5 @@
 import {fixTableCellSpaces} from "../util/fixBrowserBehavior";
+import {transformImagePaths} from "../util/function";
 import {
     getTopList,
     hasClosestBlock, hasClosestByAttribute, hasTopClosestByTag,
@@ -140,6 +141,7 @@ export const input = (vditor: IVditor, range: Range, event?: InputEvent) => {
 
         html = vditor.lute.SpinVditorDOM(html);
         html = fixTableCellSpaces(html);
+        html = transformImagePaths(html, vditor);
 
         if (isWYSIWYGElement) {
             blockElement.innerHTML = html;

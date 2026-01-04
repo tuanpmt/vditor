@@ -824,6 +824,11 @@ interface IOptions {
         /** 图片预览处理 */
         preview?: (bom: Element) => void;
     },
+    /** Transform image paths for rendering only (not in source).
+     * Useful for VS Code webview environments where local images need webview URIs.
+     * Example: (path) => webviewUri + '/' + path.replace(/^\.\//, '')
+     */
+    imagePathTransformer?: (path: string) => string;
     /** @link https://ld246.com/article/1549638745630#options-hint */
     hint?: IHint;
     /** @link https://ld246.com/article/1549638745630#options-toolbarConfig */

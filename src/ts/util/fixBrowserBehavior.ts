@@ -8,6 +8,7 @@ import {afterRenderEvent} from "../wysiwyg/afterRenderEvent";
 import {input} from "../wysiwyg/input";
 import {isCtrl, isFirefox} from "./compatibility";
 import {scrollCenter} from "./editorCommonEvent";
+import {transformImagePaths} from "./function";
 import {
     getTopList,
     hasClosestBlock,
@@ -1463,11 +1464,11 @@ export const paste = async (vditor: IVditor, event: (ClipboardEvent | DragEvent)
             if (vditor.currentMode === "ir") {
                 renderers.Md2VditorIRDOM = {renderLinkDest};
                 vditor.lute.SetJSRenderers({renderers});
-                insertHTML(Lute.Sanitize(vditor.lute.Md2VditorIRDOM(textPlain)), vditor);
+                insertHTML(transformImagePaths(Lute.Sanitize(vditor.lute.Md2VditorIRDOM(textPlain)), vditor), vditor);
             } else if (vditor.currentMode === "wysiwyg") {
                 renderers.Md2VditorDOM = {renderLinkDest};
                 vditor.lute.SetJSRenderers({renderers});
-                insertHTML(Lute.Sanitize(vditor.lute.Md2VditorDOM(textPlain)), vditor);
+                insertHTML(transformImagePaths(Lute.Sanitize(vditor.lute.Md2VditorDOM(textPlain)), vditor), vditor);
             } else {
                 renderers.Md2VditorSVDOM = {renderLinkDest};
                 vditor.lute.SetJSRenderers({renderers});

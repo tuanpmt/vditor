@@ -1,5 +1,6 @@
 import {Constants} from "../constants";
 import {fixTableCellSpaces, isHeadingMD, isHrMD} from "../util/fixBrowserBehavior";
+import {transformImagePaths} from "../util/function";
 import {
     getTopList,
     hasClosestBlock, hasClosestByAttribute,
@@ -176,6 +177,7 @@ export const input = (vditor: IVditor, range: Range, ignoreSpace = false, event?
 
     html = vditor.lute.SpinVditorIRDOM(html);
     html = fixTableCellSpaces(html);
+    html = transformImagePaths(html, vditor);
 
     if (isIRElement) {
         blockElement.innerHTML = html;

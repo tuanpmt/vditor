@@ -13,3 +13,29 @@ export const getSearch = (key: string, link = window.location.search) => {
 export const looseJsonParse = (text: string) => {
     return Function(`"use strict";return (${text})`)();
 };
+
+/**
+ * Transform image paths in HTML for rendering.
+ * Only transforms relative paths, leaves absolute URLs unchanged.
+ * Used for environments like VS Code webview where local images need special URIs.
+ */
+export const transformImagePaths = (html: string, vditor: IVditor): string => {
+    if (!vditor.options.imagePathTransformer) {
+        return html;
+    }
+
+    const transformer = vditor.options.imagePathTransformer;
+
+    // Transform image src attributes using regex
+    return html.replace(
+        /<img([^>]*)src="([^"]+)"([^>]*)>/gi,
+        (match, before, src, after) => {
+            // Skip absolute URLs and data URIs
+            if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+                return match;
+            }
+            const newSrc = transformer(src);
+            return `<img${before}src="${newSrc}"${after}>`;
+        }
+    );
+};
