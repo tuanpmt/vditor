@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': 'Hiển thị tức thì',
   'italic': 'In nghiêng',
   'language': 'Ngôn ngữ',
+  'image': 'Hình ảnh',
   'line': 'Đường phân cách',
   'link': 'Liên kết',
   'linkRef': 'Định danh tham chiếu',

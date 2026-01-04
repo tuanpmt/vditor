@@ -244,6 +244,13 @@ export class Options {
                 tipPosition: "n",
             },
             {
+                icon: '<svg><use xlink:href="#vditor-icon-image"></use></svg>',
+                name: "image",
+                prefix: "![",
+                suffix: "]()",
+                tipPosition: "n",
+            },
+            {
                 name: "|",
             },
             {

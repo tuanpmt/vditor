@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': 'インスタントレンダリング',
   'italic': '斜体',
   'language': '言語',
+  'image': '画像',
   'line': '段落分割',
   'link': 'リンク',
   'linkRef': 'リンク参照',

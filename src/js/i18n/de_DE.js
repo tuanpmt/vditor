@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': 'Sofort-Darstellung',
   'italic': 'Kursiv',
   'language': 'Sprache',
+  'image': 'Bild',
   'line': 'Zeile',
   'link': 'Link',
   'linkRef': 'Link-Verweis',

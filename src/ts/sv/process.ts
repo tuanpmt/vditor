@@ -165,9 +165,18 @@ export const processToolbar = (vditor: IVditor, actionBtn: Element, prefix: stri
     if (commandName === "link") {
         let html;
         if (range.toString() === "") {
-            html = `${prefix}${Lute.Caret}${suffix}`;
+            html = `[link](https://${Lute.Caret})`;
         } else {
             html = `${prefix}${range.toString()}${suffix.replace(")", Lute.Caret + ")")}`;
+        }
+        document.execCommand("insertHTML", false, html);
+        return;
+    } else if (commandName === "image") {
+        let html;
+        if (range.toString() === "") {
+            html = `![img alt](${Lute.Caret})`;
+        } else {
+            html = `${prefix}${range.toString()}${suffix}${Lute.Caret}`;
         }
         document.execCommand("insertHTML", false, html);
         return;

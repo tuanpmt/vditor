@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': 'Renderizado instantáneo',
   'italic': 'Cursiva',
   'language': 'Idioma',
+  'image': 'Imagen',
   'line': 'Línea divisoria',
   'link': 'Enlace',
   'linkRef': 'Identificador de referencia',

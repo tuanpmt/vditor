@@ -52,6 +52,7 @@
   'instantRendering': 'Omedelbar Rendering',
   'italic': 'Kursiv',
   'language': 'Språk',
+  'image': 'Bild',
   'line': 'Linje',
   'link': 'Länk',
   'linkRef': 'Länk Ref',

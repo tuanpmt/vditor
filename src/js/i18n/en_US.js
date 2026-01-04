@@ -53,6 +53,7 @@ window.VditorI18n = {
   'italic': 'Italic',
   'language': 'Language',
   'line': 'Line',
+  'image': 'Image',
   'link': 'Link',
   'linkRef': 'Link Ref',
   'list': 'List',

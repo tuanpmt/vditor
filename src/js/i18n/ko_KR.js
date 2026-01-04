@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': '타이포라',
   'italic': '기울임꼴',
   'language': '언어',
+  'image': '이미지',
   'line': '문단나눔',
   'link': '링크',
   'linkRef': '링크 참조',

@@ -171,14 +171,65 @@ export const processToolbar = (vditor: IVditor, actionBtn: Element, prefix: stri
             }
         } else if (commandName === "link") {
             let html;
+            let selectLinkText = false;
             if (range.toString() === "") {
-                html = `${prefix}<wbr>${suffix}`;
+                // Insert default "link" text that will be selected for easy replacement
+                html = `[link](https://)`;
+                selectLinkText = true;
             } else {
                 html = `${prefix}${range.toString()}${suffix.replace(")", "<wbr>)")}`;
             }
             document.execCommand("insertHTML", false, html);
+
+            if (selectLinkText) {
+                // Use setTimeout to wait for input event to process the markdown
+                setTimeout(() => {
+                    const linkElement = vditor.ir.element.querySelector('.vditor-ir__node--expand[data-type="a"] .vditor-ir__link');
+                    if (linkElement && linkElement.textContent === "link") {
+                        const newRange = document.createRange();
+                        newRange.selectNodeContents(linkElement);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                    }
+                }, 0);
+            }
+
             useHighlight = false;
             actionBtn.classList.add("vditor-menu--current");
+        } else if (commandName === "image") {
+            let html;
+            let selectAltText = false;
+            if (range.toString() === "") {
+                // Insert default alt text that will be selected for easy replacement
+                html = `![img alt]()`;
+                selectAltText = true;
+            } else {
+                html = `${prefix}${range.toString()}${suffix}`;
+            }
+            document.execCommand("insertHTML", false, html);
+
+            if (selectAltText) {
+                // Use setTimeout to wait for input event to process the markdown
+                setTimeout(() => {
+                    // Find the image node and select the alt text
+                    const imgNodes = vditor.ir.element.querySelectorAll('.vditor-ir__node--expand[data-type="img"]');
+                    Array.from(imgNodes).some((imgNode) => {
+                        const altMarker = imgNode.querySelector('.vditor-ir__marker[data-type="img-alt"]');
+                        if (altMarker && altMarker.textContent === "img alt") {
+                            const newRange = document.createRange();
+                            newRange.selectNodeContents(altMarker);
+                            const selection = window.getSelection();
+                            selection.removeAllRanges();
+                            selection.addRange(newRange);
+                            return true; // break
+                        }
+                        return false;
+                    });
+                }, 0);
+            }
+
+            useHighlight = false;
         } else if (commandName === "italic" || commandName === "bold" || commandName === "strike"
             || commandName === "inline-code" || commandName === "code" || commandName === "table") {
             let html;

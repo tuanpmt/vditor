@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': '即时渲染',
   'italic': '斜体',
   'language': '语言',
+  'image': '图片',
   'line': '分隔线',
   'link': '链接',
   'linkRef': '引用标识',

@@ -52,6 +52,7 @@ window.VditorI18n = {
   'instantRendering': 'Renderização instantânea',
   'italic': 'Itálico',
   'language': 'Idioma',
+  'image': 'Imagem',
   'line': 'Linha',
   'link': 'Link',
   'linkRef': 'Referência de link',
