@@ -140,3 +140,70 @@ window.setLang = (language) => {
     window.vditor.destroy()
     initVditor(language)
 }
+
+// Test getRenderedHTML - opens in new window
+window.testRenderedHTML = () => {
+    const html = window.vditor.getRenderedHTML()
+    const newWindow = window.open("", "_blank")
+    newWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Rendered HTML Test</title>
+            <link rel="stylesheet" href="/dist/index.css">
+            <style>
+                body { padding: 20px; font-family: system-ui, sans-serif; }
+                .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+                .content { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+            </style>
+        </head>
+        <body>
+            <div class="info">
+                <strong>getRenderedHTML() Output</strong><br>
+                Size: ${html.length} characters
+            </div>
+            <div class="content vditor-reset">${html}</div>
+        </body>
+        </html>
+    `)
+    newWindow.document.close()
+}
+
+// Test getRenderedHTMLWithFonts - opens in new window (async)
+window.testRenderedHTMLWithFonts = async () => {
+    const btn = event.target
+    btn.disabled = true
+    btn.textContent = "Loading fonts..."
+
+    try {
+        const html = await window.vditor.getRenderedHTMLWithFonts()
+        const newWindow = window.open("", "_blank")
+        newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Rendered HTML with Fonts Test</title>
+                <link rel="stylesheet" href="/dist/index.css">
+                <style>
+                    body { padding: 20px; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+                    .content { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                </style>
+            </head>
+            <body>
+                <div class="info">
+                    <strong>getRenderedHTMLWithFonts() Output</strong><br>
+                    Size: ${html.length} characters (includes base64 fonts)
+                </div>
+                <div class="content vditor-reset">${html}</div>
+            </body>
+            </html>
+        `)
+        newWindow.document.close()
+    } catch (e) {
+        alert("Error: " + e.message)
+    } finally {
+        btn.disabled = false
+        btn.textContent = "Test HTML+Fonts"
+    }
+}
