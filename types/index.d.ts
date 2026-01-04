@@ -397,6 +397,8 @@ interface IClipboardOptions {
     onPaste?: (callback: (text: string) => void) => void;
     /** Called when save (Cmd/Ctrl+S) is triggered in Monaco editor */
     onSave?: () => void;
+    /** Called when image is pasted from clipboard. Extension should save the image and call callback with relative path. */
+    onImagePaste?: (imageBlob: Blob, callback: (imagePath: string) => void) => void;
 }
 
 /** @link https://ld246.com/article/1549638745630#options-upload */

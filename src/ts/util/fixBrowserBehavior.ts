@@ -1431,7 +1431,36 @@ export const paste = async (vditor: IVditor, event: (ClipboardEvent | DragEvent)
             }
             vditor.outline.render(vditor);
         } else if (files.length > 0) {
-            if (vditor.options.upload.url || vditor.options.upload.handler) {
+            // Check for image and onImagePaste callback first
+            let imageFile: File | null = null;
+            if ("clipboardData" in event) {
+                const clipFiles = event.clipboardData.files;
+                if (clipFiles.length > 0 && clipFiles[0].type.startsWith("image")) {
+                    imageFile = clipFiles[0];
+                }
+            } else if (event.dataTransfer.types.includes("Files")) {
+                const dtItems = event.dataTransfer.items;
+                if (dtItems.length > 0) {
+                    const file = dtItems[0].getAsFile();
+                    if (file && file.type.startsWith("image")) {
+                        imageFile = file;
+                    }
+                }
+            }
+
+            // Use onImagePaste callback if available (for VS Code extension)
+            if (imageFile && vditor.options.clipboard?.onImagePaste) {
+                vditor.options.clipboard.onImagePaste(imageFile, (imagePath: string) => {
+                    // Insert markdown image at cursor
+                    const imageMarkdown = `![](${imagePath})`;
+                    if (vditor.currentMode === "sv") {
+                        processPaste(vditor, imageMarkdown);
+                    } else {
+                        document.execCommand("insertHTML", false, imageMarkdown);
+                        execAfterRender(vditor);
+                    }
+                });
+            } else if (vditor.options.upload.url || vditor.options.upload.handler) {
                 await uploadFiles(vditor, files);
             } else {
                 const fileReader = new FileReader();
