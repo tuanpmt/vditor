@@ -2,7 +2,12 @@ import {addScript} from "../util/addScript";
 import {addStyle} from "../util/addStyle";
 import {Constants} from "../constants";
 
-declare const MathfieldElement: any;
+// MathfieldElement is loaded dynamically from MathLive
+declare global {
+    interface Window {
+        MathfieldElement: any;
+    }
+}
 
 // ============================================================================
 // Simple LaTeX Math Prettier
@@ -378,11 +383,17 @@ export const renderMathLivePreview = (
 
     // Load MathLive and render
     loadMathLive(cdn).then(() => {
+        // Check if MathfieldElement is available
+        if (typeof window.MathfieldElement === "undefined") {
+            console.warn("MathfieldElement not available");
+            return;
+        }
+
         // Clear preview and create MathLive element
         previewElement.innerHTML = "";
 
         // Create read-only MathfieldElement
-        const mathfield = new MathfieldElement({
+        const mathfield = new window.MathfieldElement({
             readOnly: true,
             letterShapeStyle: "tex",
             virtualKeyboardMode: "off",
@@ -436,6 +447,12 @@ export const initMathLiveForMathBlock = async (
     // Load MathLive
     await loadMathLive(cdn);
 
+    // Check if MathfieldElement is available
+    if (typeof window.MathfieldElement === "undefined") {
+        console.warn("MathfieldElement not available after loading MathLive");
+        return null;
+    }
+
     // Get math content (LaTeX)
     const mathContent = codeElement.textContent || "";
 
@@ -479,7 +496,7 @@ export const initMathLiveForMathBlock = async (
     monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
 
     // Create MathLive editor (BOTTOM - editable for visual editing)
-    const mathfield = new MathfieldElement({
+    const mathfield = new window.MathfieldElement({
         readOnly: false,
         letterShapeStyle: "tex",
         smartMode: true,
