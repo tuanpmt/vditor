@@ -198,11 +198,22 @@ export const processToolbar = (vditor: IVditor, actionBtn: Element, prefix: stri
             useHighlight = false;
             actionBtn.classList.add("vditor-menu--current");
         } else if (commandName === "image") {
+            // Don't allow inserting image inside headings
+            const headingElement = hasClosestByMatchTag(range.startContainer, "H1") ||
+                hasClosestByMatchTag(range.startContainer, "H2") ||
+                hasClosestByMatchTag(range.startContainer, "H3") ||
+                hasClosestByMatchTag(range.startContainer, "H4") ||
+                hasClosestByMatchTag(range.startContainer, "H5") ||
+                hasClosestByMatchTag(range.startContainer, "H6");
+            if (headingElement) {
+                return;
+            }
+
             let html;
             let selectAltText = false;
             if (range.toString() === "") {
                 // Insert default alt text that will be selected for easy replacement
-                html = `![img alt]()`;
+                html = `![img alt](./img.jpg)`;
                 selectAltText = true;
             } else {
                 html = `${prefix}${range.toString()}${suffix}`;

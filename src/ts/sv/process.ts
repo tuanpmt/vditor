@@ -172,9 +172,20 @@ export const processToolbar = (vditor: IVditor, actionBtn: Element, prefix: stri
         document.execCommand("insertHTML", false, html);
         return;
     } else if (commandName === "image") {
+        // Don't allow inserting image inside headings
+        const headingElement = hasClosestByTag(range.startContainer, "H1") ||
+            hasClosestByTag(range.startContainer, "H2") ||
+            hasClosestByTag(range.startContainer, "H3") ||
+            hasClosestByTag(range.startContainer, "H4") ||
+            hasClosestByTag(range.startContainer, "H5") ||
+            hasClosestByTag(range.startContainer, "H6");
+        if (headingElement) {
+            return;
+        }
+
         let html;
         if (range.toString() === "") {
-            html = `![img alt](${Lute.Caret})`;
+            html = `![img alt](./img.jpg${Lute.Caret})`;
         } else {
             html = `${prefix}${range.toString()}${suffix}${Lute.Caret}`;
         }
