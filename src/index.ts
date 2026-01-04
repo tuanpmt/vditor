@@ -6,7 +6,7 @@ import {Hint} from "./ts/hint/index";
 import {IR} from "./ts/ir/index";
 import {input as irInput} from "./ts/ir/input";
 import {processAfterRender} from "./ts/ir/process";
-import {getHTML} from "./ts/markdown/getHTML";
+import {getHTML, getRenderedHTML} from "./ts/markdown/getHTML";
 import {getMarkdown} from "./ts/markdown/getMarkdown";
 import {setLute} from "./ts/markdown/setLute";
 import {MonacoManager} from "./ts/markdown/monacoRender";
@@ -315,6 +315,14 @@ class Vditor extends VditorMethod {
     /** 获取 HTML */
     public getHTML() {
         return getHTML(this.vditor);
+    }
+
+    /**
+     * Get rendered HTML from preview panel (includes rendered mermaid, math, wavedrom, etc.)
+     * Useful for PDF export where diagrams need to be already rendered as SVG
+     */
+    public getRenderedHTML() {
+        return getRenderedHTML(this.vditor);
     }
 
     /** 消息提示。time 为 0 将一直显示 */
