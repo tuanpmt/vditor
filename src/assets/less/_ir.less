@@ -127,16 +127,22 @@
         content: none;
       }
 
-      // Show actual fence marker spans
+      // Show actual fence marker spans (override .vditor-ir__marker styles)
       span[data-type="code-block-open-marker"],
       span[data-type="code-block-close-marker"] {
-        display: inline;
+        display: inline !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
         color: var(--second-color);
       }
 
-      // Show language info span
+      // Show language info span (override .vditor-ir__marker styles)
       span[data-type="code-block-info"] {
-        display: inline;
+        display: inline !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
         color: var(--ir-heading-color);
       }
     }

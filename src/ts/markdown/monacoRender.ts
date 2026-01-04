@@ -1196,14 +1196,18 @@ export const destroyMonacoForCodeBlock = (
         const previewElement = codeBlockElement.querySelector(".vditor-ir__preview, .vditor-wysiwyg__preview") as HTMLElement;
         if (previewElement) {
             previewElement.style.display = "";
-            // Reset scroll position when Monaco is destroyed
-            previewElement.scrollLeft = 0;
-            previewElement.scrollTop = 0;
             // Copy content to preview and re-render
             if (codeElement && preElement) {
                 previewElement.innerHTML = preElement.innerHTML;
                 processCodeRender(previewElement, vditor);
             }
+            // Reset scroll position AFTER re-render (with delay for async renders)
+            previewElement.scrollLeft = 0;
+            previewElement.scrollTop = 0;
+            setTimeout(() => {
+                previewElement.scrollLeft = 0;
+                previewElement.scrollTop = 0;
+            }, 100);
             // Keep pre element hidden when preview is shown (WYSIWYG/IR collapsed state)
             if (preElement) {
                 preElement.style.display = "none";
