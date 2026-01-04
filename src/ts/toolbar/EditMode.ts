@@ -168,10 +168,10 @@ export class EditMode {
         const labelSV = i18n?.splitView || "Split View";
         const labelWYSIWYG = i18n?.wysiwyg || "WYSIWYG";
 
-        // Create button group with 3 buttons using SVG icons
+        // Create button group with 2 buttons using SVG icons (IR and SV only, no WYSIWYG)
         const buttonGroup = document.createElement("div");
         buttonGroup.className = "vditor-edit-mode";
-        buttonGroup.innerHTML = `<button data-mode="ir" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelIR} <${updateHotkeyTip("⌥⌘8")}>"><svg><use xlink:href="#vditor-icon-edit"></use></svg></button><button data-mode="sv" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelSV} <${updateHotkeyTip("⌥⌘9")}>"><svg><use xlink:href="#vditor-icon-both"></use></svg></button><button data-mode="wysiwyg" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelWYSIWYG} <${updateHotkeyTip("⌥⌘7")}>"><svg><use xlink:href="#vditor-icon-preview"></use></svg></button>`;
+        buttonGroup.innerHTML = `<button data-mode="ir" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelIR} <${updateHotkeyTip("⌥⌘8")}>"><svg><use xlink:href="#vditor-icon-edit"></use></svg></button><button data-mode="sv" class="vditor-edit-mode__btn vditor-tooltipped vditor-tooltipped__s" aria-label="${labelSV} <${updateHotkeyTip("⌥⌘9")}>"><svg><use xlink:href="#vditor-icon-both"></use></svg></button>`;
 
         this.element.appendChild(buttonGroup);
 

@@ -1092,6 +1092,21 @@ export const destroyMonacoForCodeBlock = (
         vditor.monaco.destroy(monacoId);
     }
 
+    // Remove resizer if exists
+    const resizer = codeBlockElement.querySelector(".vditor-monaco-resizer");
+    if (resizer) {
+        resizer.remove();
+    }
+
+    // Remove toolbar if exists
+    const toolbar = codeBlockElement.querySelector(".vditor-monaco-mermaid-toolbar");
+    if (toolbar) {
+        toolbar.remove();
+    }
+
+    // Remove column layout class
+    codeBlockElement.classList.remove("vditor-code-block--column");
+
     // Remove wrapper
     monacoWrapper.remove();
 };

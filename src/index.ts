@@ -25,7 +25,7 @@ import {setCodeTheme} from "./ts/ui/setCodeTheme";
 import {setContentTheme} from "./ts/ui/setContentTheme";
 import {setPreviewMode} from "./ts/ui/setPreviewMode";
 import {setTheme} from "./ts/ui/setTheme";
-import {loadFonts, setFont} from "./ts/ui/setFont";
+import {loadFonts, loadBundledFonts, setFont} from "./ts/ui/setFont";
 import {mermaidRender} from "./ts/markdown/mermaidRender";
 import {wavedromRender} from "./ts/markdown/wavedromRender";
 import {Undo} from "./ts/undo/index";
@@ -144,6 +144,8 @@ class Vditor extends VditorMethod {
         this.vditor.options.font = {...this.vditor.options.font, ...fontConfig};
         if (fontConfig.fontUrl) {
             loadFonts(fontConfig.fontUrl);
+        } else if (fontConfig.useBundledFonts !== false) {
+            loadBundledFonts(this.vditor.options.cdn || "");
         }
         setFont(this.vditor.element, this.vditor.options.font);
     }
@@ -528,6 +530,9 @@ class Vditor extends VditorMethod {
         // Load fonts and apply font CSS custom properties
         if (mergedOptions.font?.fontUrl) {
             loadFonts(mergedOptions.font.fontUrl);
+        } else if (mergedOptions.font?.useBundledFonts !== false) {
+            // Load bundled fonts by default
+            loadBundledFonts(mergedOptions.cdn || "");
         }
         setFont(this.vditor.element, mergedOptions.font);
 

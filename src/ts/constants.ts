@@ -48,7 +48,8 @@ export abstract class Constants {
         // 别名
         "js", "ts", "html", "toml", "c#", "bat"
     ];
-    public static readonly CDN = `https://unpkg.com/vditor@${VDITOR_VERSION}`;
+    // Use empty string for local development, or unpkg for production
+    public static readonly CDN = ``;
     public static readonly MARKDOWN_OPTIONS = {
         autoSpace: false,
         gfmAutoLink: true,
@@ -109,9 +110,9 @@ export abstract class Constants {
     public static readonly CODE_THEME_DARK = "github-dark";
     public static readonly CODE_THEME_LIGHT = "github";
     // Default font configuration
-    public static readonly FONT_OPTIONS = {
-        content: "Nunito Sans",
-        code: "Source Code Pro",
-        fontUrl: "https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Source+Code+Pro:wght@400;500;600&display=swap",
+    public static readonly FONT_OPTIONS: IFontConfig = {
+        content: "Noto Sans",
+        code: "Fira Code",
+        useBundledFonts: true,
     };
 }

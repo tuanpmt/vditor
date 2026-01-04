@@ -175,6 +175,13 @@ module.exports = [
                     {from: 'node_modules/mathlive/mathlive-static.css', to: 'js/mathlive/mathlive-static.css'},
                     {from: 'node_modules/mathlive/fonts', to: 'js/mathlive/fonts'},
                     {from: 'node_modules/mathlive/sounds', to: 'js/mathlive/sounds'},
+                    // Bundled fonts
+                    {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-400-normal.woff2', to: 'fonts/noto-sans-latin-ext-400-normal.woff2'},
+                    {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-500-normal.woff2', to: 'fonts/noto-sans-latin-ext-500-normal.woff2'},
+                    {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-600-normal.woff2', to: 'fonts/noto-sans-latin-ext-600-normal.woff2'},
+                    {from: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-700-normal.woff2', to: 'fonts/noto-sans-latin-ext-700-normal.woff2'},
+                    {from: 'node_modules/@fontsource/fira-code/files/fira-code-latin-400-normal.woff2', to: 'fonts/fira-code-latin-400-normal.woff2'},
+                    {from: 'node_modules/@fontsource/fira-code/files/fira-code-latin-500-normal.woff2', to: 'fonts/fira-code-latin-500-normal.woff2'},
                     {from: 'types', to: 'types'},
                 ],
             }),

@@ -377,12 +377,14 @@ interface IPreviewTheme {
 
 /** Font configuration for content and code */
 interface IFontConfig {
-    /** Font family for content text. Default: 'Nunito Sans' */
+    /** Font family for content text. Default: 'Noto Sans' */
     content?: string;
-    /** Font family for code blocks and inline code. Default: 'Source Code Pro' */
+    /** Font family for code blocks and inline code. Default: 'Fira Code' */
     code?: string;
     /** Custom Google Fonts URL or other font URL to load */
     fontUrl?: string;
+    /** Use bundled fonts (Noto Sans + Fira Code). Default: true */
+    useBundledFonts?: boolean;
 }
 
 /** @link https://ld246.com/article/1549638745630#options-upload */

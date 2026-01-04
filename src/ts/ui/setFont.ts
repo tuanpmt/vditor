@@ -1,5 +1,8 @@
 import {Constants} from "../constants";
 
+/**
+ * Load fonts from URL (external Google Fonts or custom URL)
+ */
 export const loadFonts = (fontUrl: string): Promise<void> => {
     return new Promise((resolve) => {
         const existingLink = document.getElementById("vditorFontStylesheet") as HTMLLinkElement;
@@ -23,6 +26,32 @@ export const loadFonts = (fontUrl: string): Promise<void> => {
         link.onload = () => resolve();
         link.onerror = () => {
             console.warn("Failed to load font stylesheet:", fontUrl);
+            resolve();
+        };
+        document.head.appendChild(link);
+    });
+};
+
+/**
+ * Load bundled fonts (Noto Sans + Fira Code)
+ */
+export const loadBundledFonts = (cdn: string): Promise<void> => {
+    return new Promise((resolve) => {
+        const existingLink = document.getElementById("vditorBundledFonts") as HTMLLinkElement;
+        if (existingLink) {
+            resolve();
+            return;
+        }
+
+        const fontCssUrl = cdn ? `${cdn}/dist/css/fonts.css` : "/dist/css/fonts.css";
+
+        const link = document.createElement("link");
+        link.id = "vditorBundledFonts";
+        link.rel = "stylesheet";
+        link.href = fontCssUrl;
+        link.onload = () => resolve();
+        link.onerror = () => {
+            console.warn("Failed to load bundled fonts:", fontCssUrl);
             resolve();
         };
         document.head.appendChild(link);
