@@ -21,7 +21,7 @@ import {
 import {combineFootnote} from "../sv/combineFootnote";
 
 export const setEditMode = (vditor: IVditor, type: string, event: Event | string) => {
-    let markdownText;
+    let markdownText: string;
     if (typeof event !== "string") {
         hidePanel(vditor, ["subToolbar", "hint"]);
         event.preventDefault();
@@ -117,18 +117,30 @@ export const setEditMode = (vditor: IVditor, type: string, event: Event | string
         vditor.lute.SetVditorSV(true);
 
         vditor.currentMode = "sv";
-        let svHTML = processSpinVditorSVDOM(markdownText, vditor);
-        if (svHTML === "<div data-block='0'></div>") {
-            // https://github.com/Vanessa219/vditor/issues/654 SV 模式 Placeholder 显示问题
-            svHTML = "";
+
+        // Check if using Monaco SV mode
+        if (vditor.sv?.isMonacoMode?.()) {
+            // For Monaco mode, ensure Monaco is initialized then set content
+            vditor.sv.ensureInit?.().then(() => {
+                vditor.sv.setValue?.(markdownText);
+                // Render preview
+                vditor.preview?.render(vditor);
+            });
+        } else {
+            // For contenteditable mode, use Lute to process
+            let svHTML = processSpinVditorSVDOM(markdownText, vditor);
+            if (svHTML === "<div data-block='0'></div>") {
+                // https://github.com/Vanessa219/vditor/issues/654 SV 模式 Placeholder 显示问题
+                svHTML = "";
+            }
+            vditor.sv.element.innerHTML = svHTML;
+            combineFootnote(vditor.sv.element);
+            processSVAfterRender(vditor, {
+                enableAddUndoStack: true,
+                enableHint: false,
+                enableInput: false,
+            });
         }
-        vditor.sv.element.innerHTML = svHTML;
-        combineFootnote(vditor.sv.element)
-        processSVAfterRender(vditor, {
-            enableAddUndoStack: true,
-            enableHint: false,
-            enableInput: false,
-        });
         setPadding(vditor);
     }
     vditor.undo.resetIcon(vditor);

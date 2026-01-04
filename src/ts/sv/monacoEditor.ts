@@ -222,6 +222,28 @@ export class MonacoSVEditor {
             }
         } else {
             this.pendingValue = value;
+            // Try to init Monaco if not already loading
+            if (!this.isLoading) {
+                this.init();
+            }
+        }
+    }
+
+    /**
+     * Ensure Monaco is initialized (call when element becomes visible)
+     */
+    async ensureInit(): Promise<void> {
+        if (this.monacoEditor) {
+            // Force layout update when becoming visible
+            this.monacoEditor.layout();
+            return;
+        }
+        if (!this.isLoading) {
+            await this.init();
+        }
+        // Wait for loading to complete
+        while (this.isLoading) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
         }
     }
 

@@ -209,6 +209,15 @@ class Editor {
     }
 
     /**
+     * Ensure Monaco is initialized (call when becoming visible)
+     */
+    async ensureInit(): Promise<void> {
+        if (this.isMonacoMode() && this.monacoSV) {
+            await this.monacoSV.ensureInit();
+        }
+    }
+
+    /**
      * Focus the editor
      */
     focus(): void {

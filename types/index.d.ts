@@ -974,6 +974,7 @@ interface IVditor {
         isMonacoMode?(): boolean,
         getValue?(): string,
         setValue?(markdown: string): void,
+        ensureInit?(): Promise<void>,
         updateTheme?(): void,
         dispose?(): void,
     };
