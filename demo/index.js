@@ -140,3 +140,81 @@ window.setLang = (language) => {
     window.vditor.destroy()
     initVditor(language)
 }
+
+// Test getFullyRenderedHTML - opens in new window (async, with all renderers)
+window.testRenderedHTML = async () => {
+    const btn = event.target
+    btn.disabled = true
+    btn.textContent = "Rendering..."
+
+    try {
+        const html = await window.vditor.getFullyRenderedHTML()
+        const newWindow = window.open("", "_blank")
+        // Note: html already contains embedded CSS (vditor + hljs styles)
+        newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Fully Rendered HTML Test</title>
+                <style>
+                    body { padding: 20px; font-family: system-ui, sans-serif; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="info">
+                    <strong>getFullyRenderedHTML() Output</strong> - Self-contained with embedded CSS<br>
+                    Size: ${html.length} characters
+                </div>
+                ${html}
+            </body>
+            </html>
+        `)
+        newWindow.document.close()
+    } catch (e) {
+        alert("Error: " + e.message)
+    } finally {
+        btn.disabled = false
+        btn.textContent = "Test HTML"
+    }
+}
+
+// Test getRenderedHTMLWithFonts - opens in new window (async)
+window.testRenderedHTMLWithFonts = async () => {
+    const btn = event.target
+    btn.disabled = true
+    btn.textContent = "Loading..."
+
+    try {
+        const html = await window.vditor.getRenderedHTMLWithFonts()
+        const newWindow = window.open("", "_blank")
+        // Note: html already contains embedded CSS + fonts (fully self-contained)
+        newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Rendered HTML with Fonts Test</title>
+                <style>
+                    body { padding: 20px; font-family: system-ui, sans-serif; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="info">
+                    <strong>getRenderedHTMLWithFonts() Output</strong> - Self-contained with CSS + base64 fonts<br>
+                    Size: ${(html.length / 1024).toFixed(1)} KB
+                </div>
+                ${html}
+            </body>
+            </html>
+        `)
+        newWindow.document.close()
+    } catch (e) {
+        alert("Error: " + e.message)
+    } finally {
+        btn.disabled = false
+        btn.textContent = "Test HTML+Fonts"
+    }
+}
