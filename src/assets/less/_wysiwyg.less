@@ -187,6 +187,25 @@
     color: var(--blockquote-color);
   }
 
+  // MathLive wrapper styles
+  .vditor-mathlive-wrapper {
+    width: 100%;
+    min-height: 50px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+    background-color: var(--panel-background-color);
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    box-sizing: border-box;
+
+    .vditor-mathlive-field {
+      width: 100%;
+      font-size: 18px;
+      --caret-color: var(--textarea-text-color);
+    }
+  }
+
   // Monaco Editor wrapper styles
   .vditor-monaco-wrapper {
     width: 100%;

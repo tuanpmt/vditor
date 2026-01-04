@@ -1,6 +1,7 @@
 import {hasClosestByAttribute, hasClosestByClassName, hasTopClosestByClassName} from "../util/hasClosest";
 import {setSelectionFocus} from "../util/selection";
 import {initMonacoForCodeBlock, destroyMonacoForCodeBlock} from "../markdown/monacoRender";
+import {initMathLiveForMathBlock, destroyMathLiveForMathBlock} from "../markdown/mathliveRender";
 
 const nextIsNode = (range: Range) => {
     const startContainer = range.startContainer;
@@ -55,7 +56,7 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
     const nodeElement = hasTopClosestByClassName(range.startContainer, "vditor-ir__node");
     const nodeElementEnd = !range.collapsed && hasTopClosestByClassName(range.endContainer, "vditor-ir__node");
 
-    // Destroy Monaco for previously expanded code blocks that are different from current
+    // Destroy Monaco/MathLive for previously expanded blocks that are different from current
     vditor.ir.element.querySelectorAll(".vditor-ir__node--expand").forEach((item: HTMLElement) => {
         // Skip if this is the same node we're about to expand
         if (item === nodeElement) {
@@ -64,6 +65,10 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
         // Check if this is a code block with Monaco
         if (item.getAttribute("data-type") === "code-block") {
             destroyMonacoForCodeBlock(item, vditor);
+        }
+        // Check if this is a math block with MathLive
+        if (item.getAttribute("data-type") === "math-block") {
+            destroyMathLiveForMathBlock(item, vditor);
         }
         item.classList.remove("vditor-ir__node--expand");
     });
@@ -85,6 +90,13 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
                 initMonacoForCodeBlock(nodeElement, vditor);
             }
         }
+
+        // Initialize MathLive for math blocks (only if not already initialized)
+        if (nodeElement.getAttribute("data-type") === "math-block") {
+            if (!nodeElement.querySelector(".vditor-mathlive-wrapper")) {
+                initMathLiveForMathBlock(nodeElement, vditor);
+            }
+        }
     }
 
     const nextNode = nextIsNode(range);
@@ -95,6 +107,12 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
         if (nextNode.getAttribute("data-type") === "code-block" && vditor.monaco?.isEnabled()) {
             if (!nextNode.querySelector(".vditor-monaco-wrapper")) {
                 initMonacoForCodeBlock(nextNode, vditor);
+            }
+        }
+        // Initialize MathLive for math blocks (only if not already initialized)
+        if (nextNode.getAttribute("data-type") === "math-block") {
+            if (!nextNode.querySelector(".vditor-mathlive-wrapper")) {
+                initMathLiveForMathBlock(nextNode, vditor);
             }
         }
         return;
@@ -108,6 +126,12 @@ export const expandMarker = (range: Range, vditor: IVditor) => {
         if (previousNode.getAttribute("data-type") === "code-block" && vditor.monaco?.isEnabled()) {
             if (!previousNode.querySelector(".vditor-monaco-wrapper")) {
                 initMonacoForCodeBlock(previousNode, vditor);
+            }
+        }
+        // Initialize MathLive for math blocks (only if not already initialized)
+        if (previousNode.getAttribute("data-type") === "math-block") {
+            if (!previousNode.querySelector(".vditor-mathlive-wrapper")) {
+                initMathLiveForMathBlock(previousNode, vditor);
             }
         }
         return;
