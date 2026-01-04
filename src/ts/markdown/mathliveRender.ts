@@ -4,6 +4,50 @@ import {Constants} from "../constants";
 
 declare const MathfieldElement: any;
 
+/**
+ * Normalize LaTeX output from MathLive
+ * Removes extra spaces and fixes formatting issues
+ */
+const normalizeLaTeX = (latex: string): string => {
+    if (!latex) return latex;
+
+    let result = latex;
+
+    // Remove trailing spaces inside braces: {content } → {content}
+    result = result.replace(/\s+\}/g, "}");
+
+    // Remove leading spaces inside braces: { content} → {content}
+    result = result.replace(/\{\s+/g, "{");
+
+    // Remove trailing spaces inside parentheses: (content ) → (content)
+    result = result.replace(/\s+\)/g, ")");
+
+    // Remove leading spaces inside parentheses: ( content) → (content)
+    result = result.replace(/\(\s+/g, "(");
+
+    // Remove spaces before ^ and _
+    result = result.replace(/\s+\^/g, "^");
+    result = result.replace(/\s+_/g, "_");
+
+    // Remove spaces after ^ and _ if followed by { or single char
+    result = result.replace(/\^\s+/g, "^");
+    result = result.replace(/_\s+/g, "_");
+
+    // Remove spaces after backslash commands before {
+    result = result.replace(/(\\[a-zA-Z]+)\s+\{/g, "$1{");
+
+    // Remove unnecessary line breaks within the expression
+    result = result.replace(/\n\s*/g, " ");
+
+    // Remove multiple spaces (but keep single spaces)
+    result = result.replace(/  +/g, " ");
+
+    // Trim the result
+    result = result.trim();
+
+    return result;
+};
+
 // MathLive module cache
 let mathliveLoaded = false;
 let mathliveLoading: Promise<void> | null = null;
@@ -194,7 +238,8 @@ export const initMathLiveForMathBlock = async (
     const syncFromMathLive = () => {
         if (isSyncing) return;
         isSyncing = true;
-        const newValue = mathfield.value;
+        // Normalize LaTeX to fix MathLive's formatting issues
+        const newValue = normalizeLaTeX(mathfield.value);
         codeElement.textContent = newValue;
         const monacoEditor = (monacoWrapper as any).__monacoEditor;
         if (monacoEditor && monacoEditor.getValue() !== newValue) {
