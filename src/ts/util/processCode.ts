@@ -5,6 +5,7 @@ import {flowchartRender} from "../markdown/flowchartRender";
 import {graphvizRender} from "../markdown/graphvizRender";
 import {highlightRender} from "../markdown/highlightRender";
 import {mathRender} from "../markdown/mathRender";
+import {renderMathLivePreview} from "../markdown/mathliveRender";
 import {mermaidRender} from "../markdown/mermaidRender";
 import {markmapRender} from "../markdown/markmapRender";
 import {mindmapRender} from "../markdown/mindmapRender";
@@ -64,7 +65,18 @@ export const processCodeRender = (previewPanel: HTMLElement, vditor: IVditor) =>
         previewPanel.setAttribute("data-render", "1");
         return;
     }
-    const language = previewPanel.firstElementChild.className.replace("language-", "");
+    // Handle math-block specially
+    if (previewPanel.parentElement.getAttribute("data-type") === "math-block") {
+        renderMathLivePreview(previewPanel, vditor);
+        previewPanel.setAttribute("data-render", "1");
+        return;
+    }
+    const firstElement = previewPanel.firstElementChild;
+    if (!firstElement) {
+        previewPanel.setAttribute("data-render", "1");
+        return;
+    }
+    const language = firstElement.className.replace("language-", "");
     if (language === "abc") {
         abcRender(previewPanel, vditor.options.cdn);
     } else if (language === "mermaid") {
@@ -86,7 +98,8 @@ export const processCodeRender = (previewPanel: HTMLElement, vditor: IVditor) =>
     } else if (language === "graphviz") {
         graphvizRender(previewPanel, vditor.options.cdn);
     } else if (language === "math") {
-        mathRender(previewPanel, {cdn: vditor.options.cdn, math: vditor.options.preview.math});
+        // Use MathLive for rendering math in IR mode (read-only preview)
+        renderMathLivePreview(previewPanel, vditor);
     } else {
         const cRender = vditor.options.customRenders.find((item) => {
             if (item.language === language) {

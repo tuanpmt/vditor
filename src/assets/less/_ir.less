@@ -268,6 +268,72 @@
     }
   }
 
+  // MathLive read-only preview styles
+  .vditor-mathlive-preview {
+    width: 100%;
+    font-size: 18px;
+    background: transparent;
+    border: none;
+    --caret-color: transparent;
+    cursor: pointer;
+    color: var(--textarea-text-color);
+
+    &::part(content) {
+      padding: 0;
+    }
+
+    &::part(virtual-keyboard-toggle) {
+      display: none;
+    }
+  }
+
+  // MathLive editor wrapper styles (edit mode: Monaco on top, MathLive editor on bottom)
+  .vditor-mathlive-editor-wrapper {
+    width: 100%;
+    border-radius: 4px;
+    margin: 8px 0;
+    background-color: var(--panel-background-color);
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    overflow: hidden;
+
+    // Monaco editor (top)
+    .vditor-mathlive-monaco-wrapper {
+      width: 100%;
+      min-height: 100px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    // MathLive editor (bottom - editable)
+    .vditor-mathlive-field {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      font-size: 18px;
+      padding: 12px;
+      --caret-color: var(--textarea-text-color);
+      --selection-background-color: var(--textarea-background-color);
+      background: var(--panel-background-color);
+      color: var(--textarea-text-color);
+      border: none;
+      box-sizing: border-box;
+
+      &::part(content) {
+        padding: 0;
+      }
+
+      &::part(menu-toggle),
+      &::part(virtual-keyboard-toggle) {
+        color: var(--toolbar-icon-color);
+        opacity: 0.7;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
   // Monaco Editor wrapper styles
   .vditor-monaco-wrapper {
     width: 100%;
