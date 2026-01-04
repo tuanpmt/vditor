@@ -37,15 +37,12 @@ export const loadMathLive = async (cdn: string): Promise<void> => {
  * Render math preview using MathLive (read-only mode)
  * This replaces KaTeX/MathJax for math block previews
  */
-export const renderMathLivePreview = async (
+export const renderMathLivePreview = (
     previewElement: HTMLElement,
     vditor: IVditor,
-): Promise<void> => {
+): void => {
     // Get CDN path
     const cdn = vditor.options.cdn !== undefined ? vditor.options.cdn : Constants.CDN;
-
-    // Load MathLive
-    await loadMathLive(cdn);
 
     // Get the code element to extract LaTeX
     const codeElement = previewElement.querySelector("code") as HTMLElement;
@@ -55,29 +52,32 @@ export const renderMathLivePreview = async (
 
     const mathContent = codeElement.textContent || "";
 
-    // Clear preview and create MathLive element
-    previewElement.innerHTML = "";
+    // Load MathLive and render
+    loadMathLive(cdn).then(() => {
+        // Clear preview and create MathLive element
+        previewElement.innerHTML = "";
 
-    // Create read-only MathfieldElement
-    const mathfield = new MathfieldElement();
-    mathfield.className = "vditor-mathlive-preview";
-    mathfield.value = mathContent;
+        // Create read-only MathfieldElement
+        const mathfield = new MathfieldElement();
+        mathfield.className = "vditor-mathlive-preview";
+        mathfield.value = mathContent;
 
-    // Configure for read-only display
-    mathfield.readOnly = true;
-    mathfield.letterShapeStyle = "tex";
-    mathfield.virtualKeyboardMode = "off";
-    mathfield.menuItems = [];
+        // Configure for read-only display
+        mathfield.readOnly = true;
+        mathfield.letterShapeStyle = "tex";
+        mathfield.virtualKeyboardMode = "off";
+        mathfield.menuItems = [];
 
-    // Make it non-focusable
-    mathfield.setAttribute("tabindex", "-1");
+        // Make it non-focusable
+        mathfield.setAttribute("tabindex", "-1");
 
-    previewElement.appendChild(mathfield);
+        previewElement.appendChild(mathfield);
+    });
 };
 
 /**
  * Initialize MathLive editor for a math block element in IR mode (edit mode)
- * Creates editable MathLive + Monaco editor for source code
+ * Creates Monaco editor (top) + MathLive render (bottom)
  */
 export const initMathLiveForMathBlock = async (
     mathBlockElement: HTMLElement,
@@ -126,51 +126,31 @@ export const initMathLiveForMathBlock = async (
     editorWrapper.addEventListener("keyup", (e) => e.stopPropagation());
     editorWrapper.addEventListener("keypress", (e) => e.stopPropagation());
 
-    // Create MathLive editor (editable)
+    // Create Monaco editor wrapper (TOP)
+    const monacoWrapper = document.createElement("div");
+    monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
+
+    // Create MathLive render (BOTTOM - read-only for preview)
     const mathfield = new MathfieldElement();
     mathfield.className = "vditor-mathlive-field";
     mathfield.value = mathContent;
 
-    // Configure mathfield options for editing
+    // Configure mathfield for read-only render (not editing)
+    mathfield.readOnly = true;
     mathfield.letterShapeStyle = "tex";
-    mathfield.smartMode = true;
-    mathfield.virtualKeyboardMode = "manual";
+    mathfield.virtualKeyboardMode = "off";
+    mathfield.menuItems = [];
+    mathfield.setAttribute("tabindex", "-1");
 
-    // Create Monaco editor wrapper
-    const monacoWrapper = document.createElement("div");
-    monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
-
-    // Sync function to update both editors
-    let isUpdating = false;
-
-    const syncFromMathLive = () => {
-        if (isUpdating) return;
-        isUpdating = true;
-        const newValue = mathfield.value;
-        codeElement.textContent = newValue;
-        // Update Monaco if exists
-        const monacoInstance = (monacoWrapper as any).__monacoEditor;
-        if (monacoInstance && monacoInstance.getValue() !== newValue) {
-            monacoInstance.setValue(newValue);
-        }
-        isUpdating = false;
-    };
-
+    // Sync function to update MathLive from Monaco
     const syncFromMonaco = (newValue: string) => {
-        if (isUpdating) return;
-        isUpdating = true;
         codeElement.textContent = newValue;
-        if (mathfield.value !== newValue) {
-            mathfield.value = newValue;
-        }
-        isUpdating = false;
+        mathfield.value = newValue;
     };
 
-    // Handle MathLive input changes
-    mathfield.addEventListener("input", syncFromMathLive);
-
-    editorWrapper.appendChild(mathfield);
+    // Add Monaco (top) then MathLive (bottom)
     editorWrapper.appendChild(monacoWrapper);
+    editorWrapper.appendChild(mathfield);
 
     // Insert wrapper after the preview element or pre element
     if (previewElement) {
@@ -192,19 +172,17 @@ export const initMathLiveForMathBlock = async (
             syncFromMonaco,
         ).then((editor: any) => {
             (monacoWrapper as any).__monacoEditor = editor;
+            // Focus Monaco editor
+            editor.focus();
         });
     }
-
-    // Focus the mathfield
-    setTimeout(() => {
-        mathfield.focus();
-    }, 50);
 
     return mathfield;
 };
 
 /**
- * Destroy MathLive editor for a math block
+ * Destroy MathLive editor for a math block (when blur/collapse)
+ * Shows only the MathLive preview (read-only)
  */
 export const destroyMathLiveForMathBlock = (
     mathBlockElement: HTMLElement,
@@ -215,35 +193,39 @@ export const destroyMathLiveForMathBlock = (
         return;
     }
 
-    // Sync final content from MathLive
-    const mathfield = editorWrapper.querySelector(".vditor-mathlive-field") as any;
+    // Get final content from Monaco or MathLive
+    const monacoWrapper = editorWrapper.querySelector(".vditor-mathlive-monaco-wrapper") as any;
     const codeElement = mathBlockElement.querySelector("pre > code") as HTMLElement;
 
-    if (mathfield && codeElement) {
-        codeElement.textContent = mathfield.value;
-    }
-
-    // Destroy Monaco editor if exists
-    const monacoWrapper = editorWrapper.querySelector(".vditor-mathlive-monaco-wrapper") as any;
+    let finalContent = "";
     if (monacoWrapper?.__monacoEditor) {
+        finalContent = monacoWrapper.__monacoEditor.getValue();
         monacoWrapper.__monacoEditor.dispose();
+    } else {
+        const mathfield = editorWrapper.querySelector(".vditor-mathlive-field") as any;
+        if (mathfield) {
+            finalContent = mathfield.value;
+        }
     }
 
-    // Show the pre element again
+    // Update code element with final content
+    if (codeElement && finalContent) {
+        codeElement.textContent = finalContent;
+    }
+
+    // Keep pre element hidden (we don't need to show raw code)
     const preElement = codeElement?.parentElement;
     if (preElement) {
-        preElement.style.display = "";
+        preElement.style.display = "none";
     }
 
-    // Show and update the preview element
+    // Show and update the preview element with MathLive
     const previewElement = mathBlockElement.querySelector(".vditor-ir__preview") as HTMLElement;
-    if (previewElement) {
+    if (previewElement && codeElement) {
         previewElement.style.display = "";
-        // Re-render with MathLive
-        if (preElement) {
-            previewElement.innerHTML = preElement.innerHTML;
-            renderMathLivePreview(previewElement, vditor);
-        }
+        // Set the code content for MathLive to read
+        previewElement.innerHTML = `<code class="language-math">${codeElement.textContent}</code>`;
+        renderMathLivePreview(previewElement, vditor);
     }
 
     // Remove editor wrapper
