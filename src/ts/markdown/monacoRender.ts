@@ -243,7 +243,7 @@ export class MonacoManager {
         code: string,
         onChange?: (content: string) => void,
     ): Promise<any> {
-        const cdn = this.vditor.options.cdn || Constants.CDN;
+        const cdn = this.vditor.options.cdn !== undefined ? this.vditor.options.cdn : Constants.CDN;
         const monacoOptions = this.vditor.options.preview?.monaco;
 
         // Skip on mobile
