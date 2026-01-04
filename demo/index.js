@@ -150,24 +150,24 @@ window.testRenderedHTML = async () => {
     try {
         const html = await window.vditor.getFullyRenderedHTML()
         const newWindow = window.open("", "_blank")
+        // Note: html already contains embedded CSS (vditor + hljs styles)
         newWindow.document.write(`
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <title>Fully Rendered HTML Test</title>
-                <link rel="stylesheet" href="/dist/index.css">
                 <style>
                     body { padding: 20px; font-family: system-ui, sans-serif; }
-                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
-                    .content { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; }
                 </style>
             </head>
             <body>
                 <div class="info">
-                    <strong>getFullyRenderedHTML() Output</strong><br>
-                    Size: ${html.length} characters (includes rendered diagrams, code highlighting)
+                    <strong>getFullyRenderedHTML() Output</strong> - Self-contained with embedded CSS<br>
+                    Size: ${html.length} characters
                 </div>
-                <div class="content vditor-reset">${html}</div>
+                ${html}
             </body>
             </html>
         `)
@@ -184,29 +184,29 @@ window.testRenderedHTML = async () => {
 window.testRenderedHTMLWithFonts = async () => {
     const btn = event.target
     btn.disabled = true
-    btn.textContent = "Loading fonts..."
+    btn.textContent = "Loading..."
 
     try {
         const html = await window.vditor.getRenderedHTMLWithFonts()
         const newWindow = window.open("", "_blank")
+        // Note: html already contains embedded CSS + fonts (fully self-contained)
         newWindow.document.write(`
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <title>Rendered HTML with Fonts Test</title>
-                <link rel="stylesheet" href="/dist/index.css">
                 <style>
-                    body { padding: 20px; }
-                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
-                    .content { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                    body { padding: 20px; font-family: system-ui, sans-serif; }
+                    .info { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; }
                 </style>
             </head>
             <body>
                 <div class="info">
-                    <strong>getRenderedHTMLWithFonts() Output</strong><br>
-                    Size: ${html.length} characters (includes base64 fonts)
+                    <strong>getRenderedHTMLWithFonts() Output</strong> - Self-contained with CSS + base64 fonts<br>
+                    Size: ${(html.length / 1024).toFixed(1)} KB
                 </div>
-                <div class="content vditor-reset">${html}</div>
+                ${html}
             </body>
             </html>
         `)

@@ -165,10 +165,30 @@ const getRenderedHTMLFromIR = (vditor: IVditor): string => {
 };
 
 /**
+ * Fetch CSS content from URL
+ */
+const fetchCSS = async (url: string): Promise<string> => {
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            return await response.text();
+        }
+    } catch (e) {
+        console.warn(`Failed to fetch CSS: ${url}`, e);
+    }
+    return "";
+};
+
+/**
  * Get rendered HTML with all renderers applied (async)
  * This properly renders mermaid, wavedrom, code highlighting, math, etc.
+ * Includes all embedded CSS (vditor styles, syntax highlighting)
+ * Returns self-contained HTML that can be rendered anywhere
  */
 export const getFullyRenderedHTML = async (vditor: IVditor): Promise<string> => {
+    const cdn = vditor.options.cdn;
+    const hljsStyle = vditor.options.preview?.hljs?.style || "github";
+
     // Get base HTML
     let html = "";
     if (vditor.currentMode === "ir") {
@@ -191,7 +211,24 @@ export const getFullyRenderedHTML = async (vditor: IVditor): Promise<string> => 
     try {
         // Apply all renderers
         await applyRenderers(container, vditor);
-        return container.innerHTML;
+
+        // Fetch all CSS to embed
+        const [vditorCSS, hljsCSS] = await Promise.all([
+            fetchCSS(`${cdn}/dist/index.css`),
+            fetchCSS(`${cdn}/dist/js/highlight.js/styles/${hljsStyle}.min.css`),
+        ]);
+
+        // Build output with embedded styles
+        let styles = "";
+        if (vditorCSS) {
+            styles += `/* vditor styles */\n${vditorCSS}\n`;
+        }
+        if (hljsCSS) {
+            styles += `/* highlight.js - ${hljsStyle} */\n${hljsCSS}\n`;
+        }
+
+        // Return self-contained HTML with embedded styles
+        return `<style>\n${styles}</style>\n<div class="vditor-reset">${container.innerHTML}</div>`;
     } finally {
         // Clean up
         document.body.removeChild(container);
