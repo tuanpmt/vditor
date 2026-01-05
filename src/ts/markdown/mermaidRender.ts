@@ -58,16 +58,16 @@ export const getGlobalMermaidConfig = () => {
     return {...globalMermaidConfig};
 };
 
-export const mermaidRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN, theme: string, mermaidOptions?: {layout?: string, theme?: string, look?: string}) => {
+export const mermaidRender = (element: (HTMLElement | Document) = document, cdn = Constants.CDN, theme: string, mermaidOptions?: {layout?: string, theme?: string, look?: string}): Promise<void> => {
     const mermaidElements = mermaidRenderAdapter.getElements(element);
     if (mermaidElements.length === 0) {
-        return;
+        return Promise.resolve();
     }
 
     // Merge options: mermaidOptions > globalMermaidConfig
     const mergedOptions = {...globalMermaidConfig, ...mermaidOptions};
 
-    loadMermaid(cdn).then((mermaid) => {
+    return loadMermaid(cdn).then(async (mermaid) => {
         const config: any = {
             securityLevel: "loose", // 升级后无 https://github.com/siyuan-note/siyuan/issues/3587，可使用该选项
             altFontFamily: "sans-serif",
@@ -117,7 +117,9 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
             };
         }
         mermaid.initialize(config);
-        mermaidElements.forEach(async (item) => {
+
+        // Use Promise.all to wait for all diagrams to render
+        const renderPromises = Array.from(mermaidElements).map(async (item) => {
             // Skip elements in IR/WYSIWYG marker areas (source code blocks)
             if (item.parentElement.classList.contains("vditor-wysiwyg__pre") ||
                 item.parentElement.classList.contains("vditor-ir__marker--pre")) {
@@ -160,12 +162,18 @@ export const mermaidRender = (element: (HTMLElement | Document) = document, cdn 
                 }
             } catch (e) {
                 const errorElement = document.querySelector("#" + id);
-                item.innerHTML = `${errorElement.outerHTML}<br>
+                if (errorElement) {
+                    item.innerHTML = `${errorElement.outerHTML}<br>
 <div style="text-align: left"><small>${e.message.replace(/\n/, "<br>")}</small></div>`;
-                errorElement.parentElement.remove();
+                    errorElement.parentElement.remove();
+                } else {
+                    item.innerHTML = `<div style="color: red; text-align: left"><small>Mermaid error: ${e.message}</small></div>`;
+                }
             }
             item.setAttribute("data-processed", "true");
             item.setAttribute("data-theme", theme);
         });
+
+        await Promise.all(renderPromises);
     });
 };

@@ -154,7 +154,10 @@ const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<vo
     // Use MathLive for static math rendering (self-contained HTML output)
     await renderMathStatic(element, cdn);
 
-    mermaidRender(element, cdn, theme);
+    // Await mermaid render to ensure all diagrams are converted to SVG
+    await mermaidRender(element, cdn, theme);
+
+    // These renderers are fire-and-forget style, they handle their own async loading
     wavedromRender(element, cdn, theme);
     chartRender(element, cdn, theme);
     abcRender(element, cdn);
@@ -166,8 +169,8 @@ const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<vo
     SMILESRender(element, cdn, theme);
 
     // Wait for async renderers to complete (they load external scripts)
-    // Poll until code blocks are highlighted or timeout
-    const maxWait = 3000;
+    // Poll until code blocks are highlighted and diagrams are rendered
+    const maxWait = 5000;
     const startTime = Date.now();
 
     await new Promise<void>((resolve) => {
@@ -179,7 +182,13 @@ const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<vo
                            block.classList.contains("language-math")
             );
 
-            if (allHighlighted || Date.now() - startTime > maxWait) {
+            // Also check that all mermaid elements have been processed (contain SVG)
+            const mermaidElements = element.querySelectorAll(".language-mermaid");
+            const allMermaidRendered = Array.from(mermaidElements).every(
+                (el) => el.getAttribute("data-processed") === "true" || el.querySelector("svg")
+            );
+
+            if ((allHighlighted && allMermaidRendered) || Date.now() - startTime > maxWait) {
                 resolve();
             } else {
                 setTimeout(checkRendered, 100);
