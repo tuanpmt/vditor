@@ -5,6 +5,34 @@
   position: relative;
   width: 100%;
 
+  // Thin scrollbar for editor
+  > pre {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(128, 128, 128, 0.2);
+      border-radius: 4px;
+    }
+
+    &:hover::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background-color: rgba(128, 128, 128, 0.5);
+    }
+  }
+
   &__node {
     &[data-type="code-block"]:before,
     &[data-type="code-block"]:after,

@@ -599,8 +599,41 @@
             border-left: 1px solid var(--border-color);
         }
 
-        &::-webkit-scrollbar {
-            display: none;
+        // Custom thin scrollbar
+        overflow-y: overlay;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+        }
+
+        &::-webkit-scrollbar,
+        & *::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        &::-webkit-scrollbar-track,
+        & *::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb,
+        & *::-webkit-scrollbar-thumb {
+            background-color: rgba(128, 128, 128, 0.2);
+            border-radius: 4px;
+        }
+
+        &:hover::-webkit-scrollbar,
+        &:hover *::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        &:hover::-webkit-scrollbar-thumb,
+        &:hover *::-webkit-scrollbar-thumb {
+            background-color: rgba(128, 128, 128, 0.5);
         }
 
         ul {
