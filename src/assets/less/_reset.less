@@ -11,7 +11,7 @@
             line-height: 16px;
         }
 
-        color: #24292e;
+        color: var(--textarea-text-color);
         font-variant-ligatures: no-common-ligatures;
         font-family: var(--font-family-content);
         word-wrap: break-word;
@@ -114,7 +114,7 @@
             height: 2px;
             padding: 0;
             margin: 24px 0;
-            background-color: #eaecef;
+            background-color: var(--heading-border-color);
             border: 0;
         }
 
@@ -124,9 +124,11 @@
         }
 
         blockquote {
-            padding: 0 1em;
-            color: #6a737d;
-            border-left: 0.25em solid #eaecef;
+            padding: 0.5em 1em;
+            color: var(--blockquote-color);
+            background-color: var(--textarea-background-color);
+            border-left: 0.25em solid var(--heading-border-color);
+            border-radius: 0 4px 4px 0;
             margin: 0 0 16px 0;
 
             & > :first-child {
@@ -143,7 +145,7 @@
         }
 
         iframe {
-            border: 1px solid #d1d5da;
+            border: 1px solid var(--border-color);
             max-width: 100%;
             box-sizing: border-box;
 
@@ -164,14 +166,14 @@
             width: 100%;
 
             tr {
-                background-color: #fafbfc;
-                border-top: 1px solid #c6cbd1;
+                background-color: var(--textarea-background-color);
+                border-top: 1px solid var(--border-color);
             }
 
             td,
             th {
                 padding: 6px 13px;
-                border: 1px solid #dfe2e5;
+                border: 1px solid var(--border-color);
                 word-break: normal;
                 white-space: nowrap;
 
@@ -188,7 +190,7 @@
             }
 
             tbody tr:nth-child(2n) {
-                background-color: #fff;
+                background-color: var(--panel-background-color);
             }
         }
 
@@ -313,12 +315,12 @@
             padding: 3px 5px;
             font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
             line-height: 10px;
-            color: #24292e;
+            color: var(--textarea-text-color);
             vertical-align: middle;
-            background-color: #fafbfc;
-            border: solid 1px #d1d5da;
+            background-color: var(--textarea-background-color);
+            border: solid 1px var(--border-color);
             border-radius: 3px;
-            box-shadow: inset 0 -1px 0 #d1d5da;
+            box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
         summary {
@@ -389,7 +391,7 @@
         }
 
         svg {
-            color: #586069;
+            color: var(--toolbar-icon-color);
             height: 14px;
             width: 14px !important;
             display: block;
@@ -417,7 +419,7 @@
                 &::before {
                     counter-increment: linenumber;
                     content: counter(linenumber);
-                    color: rgba(158, 150, 150, 0.38);
+                    color: var(--second-color);
                     display: block;
                     padding-right: 1em;
                     text-align: right;
@@ -429,16 +431,16 @@
     &-speech {
         position: absolute;
         display: none;
-        background-color: #f6f8fa;
-        border: 1px solid #d1d5da;
+        background-color: var(--toolbar-background-color);
+        border: 1px solid var(--border-color);
         border-radius: 3px;
         padding: 3px;
         cursor: pointer;
-        color: #586069;
+        color: var(--toolbar-icon-color);
 
         &:hover,
         &--current {
-            color: #4285f4;
+            color: var(--toolbar-icon-hover-color);
         }
 
         svg {
@@ -484,13 +486,13 @@
 
         a {
             border-radius: 3px;
-            background-color: #f6f8fa;
+            background-color: var(--toolbar-background-color);
             overflow: hidden;
             max-height: 250px;
             display: flex;
             text-decoration: none;
             flex-wrap: wrap-reverse;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--panel-shadow);
 
             &:hover {
                 box-shadow: 0 0 3px rgba(0, 0, 0, 0.13), 0 3px 6px rgba(0, 0, 0, 0.26);
@@ -498,7 +500,7 @@
             }
 
             &:visited .vditor-linkcard__abstract {
-                color: rgba(88, 96, 105, 0.36);
+                color: var(--second-color);
             }
         }
 
@@ -512,7 +514,7 @@
         &__title {
             font-size: 14px;
             font-weight: 400;
-            color: #24292e;
+            color: var(--textarea-text-color);
             display: flex;
             align-items: center;
 
@@ -535,13 +537,13 @@
             -webkit-box-orient: vertical;
             display: -webkit-box;
             font-size: 13px;
-            color: #586069;
+            color: var(--toolbar-icon-color);
             margin: 5px 0;
         }
 
         &__site {
             font-size: 12px;
-            color: #4285f4;
+            color: @blurColor;
         }
 
         &__image {
@@ -551,7 +553,7 @@
             max-width: 250px;
             min-width: 126px;
             cursor: pointer;
-            background-color: rgba(88, 96, 105, 0.36);
+            background-color: var(--second-color);
         }
     }
 

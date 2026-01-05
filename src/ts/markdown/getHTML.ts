@@ -266,8 +266,28 @@ export const getFullyRenderedHTML = async (vditor: IVditor): Promise<string> => 
             fetchCSS(`${cdn}/dist/js/mathlive/mathlive-static.css`),
         ]);
 
+        // CSS variables for theming (normally defined on .vditor class)
+        const cssVariables = `
+/* CSS Variables for standalone rendering */
+.vditor-reset {
+  --font-family-content: "Nunito Sans", "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+  --font-family-code: "Source Code Pro", mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  --border-color: #d1d5da;
+  --second-color: rgba(88, 96, 105, 0.36);
+  --panel-background-color: #fff;
+  --panel-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --toolbar-background-color: #f6f8fa;
+  --toolbar-icon-color: #586069;
+  --toolbar-icon-hover-color: #4285f4;
+  --textarea-background-color: #fafbfc;
+  --textarea-text-color: #24292e;
+  --heading-border-color: #eaecef;
+  --blockquote-color: #6a737d;
+}
+`;
+
         // Build output with embedded styles
-        let styles = "";
+        let styles = cssVariables;
         if (vditorCSS) {
             styles += `/* vditor styles */\n${vditorCSS}\n`;
         }
