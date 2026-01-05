@@ -3,7 +3,6 @@ import {highlightRender} from "./highlightRender";
 import {codeRender} from "./codeRender";
 import {mermaidRender} from "./mermaidRender";
 import {wavedromRender} from "./wavedromRender";
-import {mathRender} from "./mathRender";
 import {chartRender} from "./chartRender";
 import {abcRender} from "./abcRender";
 import {graphvizRender} from "./graphvizRender";
@@ -12,6 +11,7 @@ import {mindmapRender} from "./mindmapRender";
 import {plantumlRender} from "./plantumlRender";
 import {markmapRender} from "./markmapRender";
 import {SMILESRender} from "./SMILESRender";
+import {loadMathLive} from "./mathliveRender";
 
 // Font definitions for embedding
 const FONT_DEFINITIONS = [
@@ -103,6 +103,42 @@ export const getHTML = (vditor: IVditor) => {
 };
 
 /**
+ * Render math elements using MathLive's convertLatexToMarkup for static HTML output
+ * This produces self-contained HTML that doesn't require JavaScript
+ */
+const renderMathStatic = async (element: HTMLElement, cdn: string): Promise<void> => {
+    // Load MathLive
+    await loadMathLive(cdn);
+
+    // Get convertLatexToMarkup from MathLive
+    const convertLatexToMarkup = (window as any).MathLive?.convertLatexToMarkup;
+    if (!convertLatexToMarkup) {
+        console.warn("MathLive convertLatexToMarkup not available");
+        return;
+    }
+
+    // Find all math elements (both block and inline)
+    const mathElements = element.querySelectorAll(".language-math, .vditor-math");
+    mathElements.forEach((mathEl) => {
+        const latex = mathEl.textContent?.trim();
+        if (!latex) return;
+
+        try {
+            const isBlock = mathEl.tagName === "DIV" || mathEl.closest("div.language-math") !== null;
+            const markup = convertLatexToMarkup(latex, {
+                mathstyle: isBlock ? "displaystyle" : "textstyle",
+            });
+            mathEl.innerHTML = markup;
+            mathEl.setAttribute("data-math", latex);
+            mathEl.classList.add("vditor-math--rendered");
+        } catch (e) {
+            console.warn("Failed to render math:", latex, e);
+            mathEl.classList.add("vditor-math--error");
+        }
+    });
+};
+
+/**
  * Apply all renderers to an element (similar to preview.render)
  * This applies syntax highlighting, mermaid, wavedrom, math, etc.
  */
@@ -110,12 +146,14 @@ const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<vo
     const cdn = vditor.options.cdn;
     const theme = vditor.options.theme;
     const hljs = vditor.options.preview?.hljs || {};
-    const math = vditor.options.preview?.math || {};
 
     // Apply renderers (these are async - they load scripts dynamically)
     highlightRender(hljs, element, cdn);
     codeRender(element, hljs);
-    mathRender(element, {cdn, math});
+
+    // Use MathLive for static math rendering (self-contained HTML output)
+    await renderMathStatic(element, cdn);
+
     mermaidRender(element, cdn, theme);
     wavedromRender(element, cdn, theme);
     chartRender(element, cdn, theme);
@@ -212,10 +250,11 @@ export const getFullyRenderedHTML = async (vditor: IVditor): Promise<string> => 
         // Apply all renderers
         await applyRenderers(container, vditor);
 
-        // Fetch all CSS to embed
-        const [vditorCSS, hljsCSS] = await Promise.all([
+        // Fetch all CSS to embed (including MathLive static CSS for math rendering)
+        const [vditorCSS, hljsCSS, mathliveCSS] = await Promise.all([
             fetchCSS(`${cdn}/dist/index.css`),
             fetchCSS(`${cdn}/dist/js/highlight.js/styles/${hljsStyle}.min.css`),
+            fetchCSS(`${cdn}/dist/js/mathlive/mathlive-static.css`),
         ]);
 
         // Build output with embedded styles
@@ -225,6 +264,9 @@ export const getFullyRenderedHTML = async (vditor: IVditor): Promise<string> => 
         }
         if (hljsCSS) {
             styles += `/* highlight.js - ${hljsStyle} */\n${hljsCSS}\n`;
+        }
+        if (mathliveCSS) {
+            styles += `/* mathlive static styles */\n${mathliveCSS}\n`;
         }
 
         // Return self-contained HTML with embedded styles
