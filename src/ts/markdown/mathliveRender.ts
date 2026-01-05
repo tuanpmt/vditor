@@ -19,7 +19,20 @@ declare global {
  * Older versions export to window.MathfieldElement
  */
 const getMathfieldElement = (): any => {
-    return window.MathLive?.MathfieldElement || window.MathfieldElement;
+    // Try window.MathLive first (standard UMD export for 0.108+)
+    if (window.MathLive?.MathfieldElement) {
+        return window.MathLive.MathfieldElement;
+    }
+    // Try older versions
+    if (window.MathfieldElement) {
+        return window.MathfieldElement;
+    }
+    // Try getting from customElements registry as fallback
+    const MathfieldElementClass = customElements.get("math-field");
+    if (MathfieldElementClass) {
+        return MathfieldElementClass;
+    }
+    return undefined;
 };
 
 // ============================================================================
@@ -353,8 +366,53 @@ export const loadMathLive = async (cdn: string): Promise<void> => {
         addStyle(`${cdn}/dist/js/mathlive/mathlive-fonts.css`, "vditorMathLiveFontsStyle");
         addStyle(`${cdn}/dist/js/mathlive/mathlive-static.css`, "vditorMathLiveStaticStyle");
 
-        // Load MathLive script
-        await addScript(`${cdn}/dist/js/mathlive/mathlive.min.js`, "vditorMathLiveScript");
+        // Load MathLive script - fetch and eval to bypass webpack module detection
+        await new Promise<void>((resolve, reject) => {
+            const existingScript = document.getElementById("vditorMathLiveScript");
+            if (existingScript) {
+                resolve();
+                return;
+            }
+
+            const scriptUrl = `${cdn}/dist/js/mathlive/mathlive.min.js`;
+
+            // Fetch the script and eval it in a clean context
+            fetch(scriptUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch MathLive: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(scriptText => {
+                    // Temporarily hide module/exports/define to force UMD to use global
+                    const savedModule = (window as any).module;
+                    const savedExports = (window as any).exports;
+                    const savedDefine = (window as any).define;
+                    (window as any).module = undefined;
+                    (window as any).exports = undefined;
+                    (window as any).define = undefined;
+
+                    try {
+                        // Execute the script
+                        const scriptFn = new Function(scriptText);
+                        scriptFn();
+
+                        // Mark as loaded
+                        const marker = document.createElement("div");
+                        marker.id = "vditorMathLiveScript";
+                        marker.style.display = "none";
+                        document.body.appendChild(marker);
+                    } finally {
+                        // Restore module/exports/define
+                        (window as any).module = savedModule;
+                        (window as any).exports = savedExports;
+                        (window as any).define = savedDefine;
+                    }
+                    resolve();
+                })
+                .catch(reject);
+        });
 
         mathliveLoaded = true;
     })();
@@ -372,7 +430,7 @@ export const renderMathLivePreview = (
     vditor: IVditor,
 ): void => {
     // Get CDN path
-    const cdn = vditor.options.cdn !== undefined ? vditor.options.cdn : Constants.CDN;
+    const cdn = vditor.options.cdn || Constants.CDN;
 
     // Get the LaTeX content - first try from preview's code element, then from parent's pre > code
     let mathContent = "";
@@ -407,11 +465,11 @@ export const renderMathLivePreview = (
         previewElement.innerHTML = "";
 
         // Create read-only MathfieldElement
-        const mathfield = new MathfieldElementClass({
-            readOnly: true,
-            letterShapeStyle: "tex",
-            virtualKeyboardMode: "off",
-        });
+        // Note: In MathLive 0.108+, readOnly must be set as property, not constructor option
+        const mathfield = new MathfieldElementClass();
+        mathfield.readOnly = true;
+        mathfield.letterShapeStyle = "tex";
+        mathfield.virtualKeyboardMode = "off";
         mathfield.className = "vditor-mathlive-preview";
 
         // Make it non-focusable
@@ -456,7 +514,7 @@ export const initMathLiveForMathBlock = async (
     }
 
     // Get CDN path
-    const cdn = vditor.options.cdn !== undefined ? vditor.options.cdn : Constants.CDN;
+    const cdn = vditor.options.cdn || Constants.CDN;
 
     // Load MathLive
     await loadMathLive(cdn);
@@ -513,12 +571,12 @@ export const initMathLiveForMathBlock = async (
     monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
 
     // Create MathLive editor (BOTTOM - editable for visual editing)
-    const mathfield = new MathfieldElementClass({
-        readOnly: false,
-        letterShapeStyle: "tex",
-        smartMode: true,
-        virtualKeyboardMode: "manual",
-    });
+    // Note: In MathLive 0.108+, options must be set as properties, not constructor options
+    const mathfield = new MathfieldElementClass();
+    mathfield.readOnly = false;
+    mathfield.letterShapeStyle = "tex";
+    mathfield.smartMode = true;
+    mathfield.virtualKeyboardMode = "manual";
     mathfield.className = "vditor-mathlive-field";
 
     // Sync flag to prevent infinite loops
