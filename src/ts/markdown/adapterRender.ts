@@ -43,3 +43,7 @@ export const wavedromRenderAdapter = {
     getCode: (el: Element) => el.textContent,
     getElements: (el: HTMLElement | Document) => el.querySelectorAll(".language-wavedrom"),
 };
+export const typogramRenderAdapter = {
+    getCode: (el: Element) => el.textContent,
+    getElements: (el: HTMLElement | Document) => el.querySelectorAll(".language-typogram"),
+};

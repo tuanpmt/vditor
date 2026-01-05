@@ -11,6 +11,7 @@ import {markmapRender} from "../markdown/markmapRender";
 import {mindmapRender} from "../markdown/mindmapRender";
 import {plantumlRender} from "../markdown/plantumlRender";
 import {SMILESRender} from "../markdown/SMILESRender";
+import {typogramRender} from "../markdown/typogramRender";
 import {wavedromRender} from "../markdown/wavedromRender";
 
 export const processPasteCode = (html: string, text: string, type = "sv") => {
@@ -97,6 +98,8 @@ export const processCodeRender = (previewPanel: HTMLElement, vditor: IVditor) =>
         wavedromRender(previewPanel, vditor.options.cdn, vditor.options.theme);
     } else if (language === "graphviz") {
         graphvizRender(previewPanel, vditor.options.cdn);
+    } else if (language === "typogram") {
+        typogramRender(previewPanel, vditor.options.cdn);
     } else if (language === "math") {
         // Use MathLive for rendering math in IR mode (read-only preview)
         renderMathLivePreview(previewPanel, vditor);

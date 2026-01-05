@@ -11,6 +11,7 @@ import {mindmapRender} from "./mindmapRender";
 import {plantumlRender} from "./plantumlRender";
 import {markmapRender} from "./markmapRender";
 import {SMILESRender} from "./SMILESRender";
+import {typogramRender} from "./typogramRender";
 import {loadMathLive} from "./mathliveRender";
 
 // Font definitions for embedding
@@ -164,6 +165,7 @@ const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<vo
     plantumlRender(element, cdn);
     markmapRender(element, cdn);
     SMILESRender(element, cdn, theme);
+    typogramRender(element, cdn);
 
     // Wait for async renderers to complete (they load external scripts)
     // Poll until code blocks are highlighted or timeout
@@ -176,7 +178,8 @@ const applyRenderers = async (element: HTMLElement, vditor: IVditor): Promise<vo
             const allHighlighted = Array.from(codeBlocks).every(
                 (block) => block.classList.contains("hljs") ||
                            block.classList.contains("language-mermaid") ||
-                           block.classList.contains("language-math")
+                           block.classList.contains("language-math") ||
+                           block.classList.contains("language-typogram")
             );
 
             if (allHighlighted || Date.now() - startTime > maxWait) {
