@@ -402,6 +402,10 @@ class Vditor extends VditorMethod {
 
     /** 设置编辑器内容 */
     public setValue(markdown: string, clearStack = false) {
+        // Cache original markdown for later retrieval without formatting changes
+        this.vditor.originalMarkdown = markdown;
+        this.vditor.markdownChanged = false;
+
         if (this.vditor.currentMode === "sv") {
             // Use Monaco SV setValue if available
             if (this.vditor.sv?.isMonacoMode?.() && this.vditor.sv?.setValue) {
@@ -601,6 +605,8 @@ class Vditor extends VditorMethod {
             lute: undefined,
             options: mergedOptions,
             originalInnerHTML: id.innerHTML,
+            originalMarkdown: "",
+            markdownChanged: false,
             outline: new Outline(window.VditorI18n.outline),
             tip: new Tip(),
         };

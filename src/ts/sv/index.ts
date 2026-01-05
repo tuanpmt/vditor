@@ -136,6 +136,9 @@ class Editor {
         });
 
         this.element.addEventListener("input", (event: InputEvent) => {
+            // Mark content as changed when user edits
+            vditor.markdownChanged = true;
+
             if (event.inputType === "deleteByDrag" || event.inputType === "insertFromDrop") {
                 // https://github.com/Vanessa219/vditor/issues/801 编辑器内容拖拽问题
                 return;

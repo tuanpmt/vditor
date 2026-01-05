@@ -1,6 +1,17 @@
 import {code160to32} from "../util/code160to32";
 
+/**
+ * Get markdown content from editor.
+ * If user hasn't made any changes, returns the original markdown to preserve formatting.
+ * Otherwise, converts the current DOM state back to markdown.
+ */
 export const getMarkdown = (vditor: IVditor) => {
+    // Return original markdown if no changes were made by user
+    // This preserves the exact formatting of the input
+    if (!vditor.markdownChanged && vditor.originalMarkdown) {
+        return vditor.originalMarkdown;
+    }
+
     if (vditor.currentMode === "sv") {
         // Use Monaco SV getValue if available
         if (vditor.sv?.isMonacoMode?.() && vditor.sv?.getValue) {

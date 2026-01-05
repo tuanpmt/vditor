@@ -101,6 +101,9 @@ class IR {
         });
 
         this.element.addEventListener("input", (event: InputEvent) => {
+            // Mark content as changed when user edits
+            vditor.markdownChanged = true;
+
             // Skip if input is from Monaco editor
             const targetEl = event.target as HTMLElement;
             if (targetEl && targetEl.closest && targetEl.closest(".vditor-monaco-wrapper")) {

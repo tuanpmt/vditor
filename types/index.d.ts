@@ -903,6 +903,8 @@ interface IVditor {
     element: HTMLElement;
     options: IOptions;
     originalInnerHTML: string;
+    originalMarkdown: string;  // Cached original markdown from setValue
+    markdownChanged: boolean;  // Flag to track if user has edited content
     lute: Lute;
     currentMode: "sv" | "wysiwyg" | "ir";
     devtools?: {
