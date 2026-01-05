@@ -111,7 +111,7 @@ class Undo {
         // afterRenderEvent.ts 已经 debounce
         const text = this.addCaret(vditor, true);
         const diff = this.dmp.diff_main(text, this[vditor.currentMode].lastText, true);
-        const patchList = this.dmp.patch_make(text, this[vditor.currentMode].lastText, diff) as patch_obj[];
+        const patchList = this.dmp.patch_make(text, this[vditor.currentMode].lastText, diff) as unknown as patch_obj[];
         if (patchList.length === 0 && this[vditor.currentMode].undoStack.length > 0) {
             return;
         }
@@ -134,7 +134,7 @@ class Undo {
     private renderDiff(state: patch_obj[], vditor: IVditor, isRedo: boolean = false) {
         let text;
         if (isRedo) {
-            const redoPatchList = (this.dmp.patch_deepCopy(state as any) as patch_obj[]).reverse();
+            const redoPatchList = (this.dmp.patch_deepCopy(state as any) as unknown as patch_obj[]).reverse();
             redoPatchList.forEach((patch: patch_obj) => {
                 patch.diffs.forEach((diff: Diff) => {
                     diff[0] = -diff[0] as number;
