@@ -3,11 +3,24 @@ import {addStyle} from "../util/addStyle";
 import {Constants} from "../constants";
 
 // MathfieldElement is loaded dynamically from MathLive
+// MathLive 0.108+ exports to window.MathLive.MathfieldElement
 declare global {
     interface Window {
         MathfieldElement: any;
+        MathLive: {
+            MathfieldElement: any;
+        };
     }
 }
+
+/**
+ * Get MathfieldElement constructor from window
+ * MathLive 0.108+ exports to window.MathLive.MathfieldElement
+ * Older versions export to window.MathfieldElement
+ */
+const getMathfieldElement = (): any => {
+    return window.MathLive?.MathfieldElement || window.MathfieldElement;
+};
 
 // ============================================================================
 // Simple LaTeX Math Prettier
@@ -383,8 +396,9 @@ export const renderMathLivePreview = (
 
     // Load MathLive and render
     loadMathLive(cdn).then(() => {
+        const MathfieldElementClass = getMathfieldElement();
         // Check if MathfieldElement is available
-        if (typeof window.MathfieldElement === "undefined") {
+        if (typeof MathfieldElementClass === "undefined") {
             console.warn("MathfieldElement not available");
             return;
         }
@@ -393,7 +407,7 @@ export const renderMathLivePreview = (
         previewElement.innerHTML = "";
 
         // Create read-only MathfieldElement
-        const mathfield = new window.MathfieldElement({
+        const mathfield = new MathfieldElementClass({
             readOnly: true,
             letterShapeStyle: "tex",
             virtualKeyboardMode: "off",
@@ -447,8 +461,11 @@ export const initMathLiveForMathBlock = async (
     // Load MathLive
     await loadMathLive(cdn);
 
+    // Get MathfieldElement class
+    const MathfieldElementClass = getMathfieldElement();
+
     // Check if MathfieldElement is available
-    if (typeof window.MathfieldElement === "undefined") {
+    if (typeof MathfieldElementClass === "undefined") {
         console.warn("MathfieldElement not available after loading MathLive");
         return null;
     }
@@ -496,7 +513,7 @@ export const initMathLiveForMathBlock = async (
     monacoWrapper.className = "vditor-mathlive-monaco-wrapper";
 
     // Create MathLive editor (BOTTOM - editable for visual editing)
-    const mathfield = new window.MathfieldElement({
+    const mathfield = new MathfieldElementClass({
         readOnly: false,
         letterShapeStyle: "tex",
         smartMode: true,
